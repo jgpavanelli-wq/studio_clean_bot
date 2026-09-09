@@ -103,7 +103,7 @@ SCOPES = [
 ]
 
 # Nome exato do arquivo JSON que está na sua pasta (e que você vai subir no GitHub junto com este script)
-CREDENTIALS_FILE = "sudiocleanautomation-cb99c084c8f8.json"
+CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
 
 creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
 client = gspread.authorize(creds)
