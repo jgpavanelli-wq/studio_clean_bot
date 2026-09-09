@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "studiocleanautomation",
+  "private_key_id": "cb99c084c8f8993ca1c80a838704f2638782af2d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDbR9sq38GE9rrN\ns/1num9y6Ei3GUyA6KKR0VGmZVj0lRg0zWyJWMJ9gAO+jMhxaFIW7NRsbCfA+DxH\nP7tW/G6zpY2w4O7W2OpKrj2v9gw5s2Ux567hGj+7cA+53IdcSaCrftIVl7ntctAp\ndQBhLtfhpdqxlwcjQB3CE9NUeYck92pX/77yqWhzvwLbAdjVMbL7n0xi7dr94Qtl\n57Zr54Dv2CCG8298IFM8/AV3XsiuhoVfteHtKVy55/V4/i57ro1XpKP3xTQmVdfC\nADxmD63D19oed+Z8y0u1bydQdPCkiCwFle8fIbHuTjLtGdMyeficnTmT3Z+UeZgf\nsHTAMGUxAgMBAAECggEAAp0XlQTYh9ZVmuCGkHktGAS3Yv8lOEXgPq5SK6Jf0h9R\nu/A3zIcLSenymXpFzxlnXZSLnLd5DZRz36Ty2DYvQbBIk8te42llA62nc0iyrnsi\nOsBxrIc8C7Fp2ZJ3UVD4w5ncpOMzenu0v21rOyKkR3abGG9AjOGy3RqQWWHZsSsa\nt3tiaSW7Gpg9fBpEH/SpbZp8KSj2gJa82cbJDQthKjGmkdsJ3SlB5efcS/aPFA0D\nDhamuywlzZxo1yNDxZSe3LUJX/APfH1an0a+NkwoaK1QbR3mnmh6iiPXVWAM+GSM\nHOZet+6eo8jnSNJXDOFkBu6cMDwxvOw9MDBvqNG+oQKBgQDyLFab2B/EpOEpeWAM\n99Hl1sg6n6k08mhHqHYMUAw29lYMEyQbdS/FvMq3AUwRulABSaYd9B/n9VZjboTT\nXd7xXuFSjozVrBbvOKuaYZSRyVTyYxtYKvnTbOJ3NHGEb0B206MMx4t0OQfu4GPy\nAIK0SnhjRDriFAcPdV63fi2IEQKBgQDnzOpXbTbT6TCyPFwn12iXpROqki9lUqqJ\neASAEpSI02HH7UVoUk28kHy50HvAC+VCqmJwNVm6pu9+LzoBUrSSAxsUhHaEoJLP\nV0fley4TCm9tKlULIrzK5+4+ARwWNL3l65wfGOo7Fx62Igo8QeZ5WqdlQ1Kz2aMB\n5FjZPgcrIQKBgBkScBEIahmQvGLv1vrguVFjUC2JlBoQMq2gikAyFWGnVTdA0A8r\nrbt6FT6nGroHIPtRJaqaOKdqJfx7V7MOV+ODYC6M5ZXFkEZKBrIgAiKpxmqlyhHx\nuRWjgzq2Kj58yh7DQHE1Q4HP2btobdCDLwT9ZMNaMAJx8l0uWJUEsjARAoGAIG/x\nfyh+WqswMFD4CG9BaK8mEGGClmg6CyCraIyxEnCaJ1MRumaCEFgbzBjbqGVBwNF9\nEvy0QMVpkDvlnxfGwwQCPx3GRAsAYFlzay6QpQN50knxOqyyxKYuFaksGANra4hM\nAaIH7RrwJkafLg1+xg6kjCwen6JeCD6/HC9s62ECgYAtcoTixpboSlwTxfLpkKRW\nf3kVnPeX9l4Z0caHu4IKMsMndw/Q5c57YHZTMS/7RKtabky5Kv3Yz/bJWQ+FzF+k\n/kjINfrMWR3Tug0ytNLe7VL2EwZ4jwaN1jB1HMTnx1Fw76w8kTg7KbACMnq5JU+T\nee8gXg4uDTMfp4RLxiH4dQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "robo-studio-clean@studiocleanautomation.iam.gserviceaccount.com",
+  "client_id": "106042217826893318631",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/robo-studio-clean%40studiocleanautomation.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
