@@ -28,6 +28,6 @@ jobs:
         run: |
           python studio_clean_sync_3.py
         env:
-        EMAIL_ORIGEM: ${{ secrets.MEU_EMAIL }}
-        SENHA_APLICATIVO: ${{ secrets.SENHA_APP }}
-        PYTHONUNBUFFERED: '1'
+          EMAIL_ORIGEM: ${{ secrets.MEU_EMAIL }}
+          SENHA_APLICATIVO: ${{ secrets.SENHA_APP }}
+          PYTHONUNBUFFERED: '1'
