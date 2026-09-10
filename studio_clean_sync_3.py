@@ -79,20 +79,19 @@ if response.status_code == 200:
             "Toalhas de Banho": toalhas_banho
         })
     
-       # Criando o DataFrame e ordenando cronologicamente
-    df = pd.DataFrame(lista_processada)
+           # Criando o DataFrame e ordenando cronologicamente
+        df = pd.DataFrame(lista_processada)
     if not df.empty:
-        # Converte as colunas de texto para datas reais do formato ISO (YYYY-MM-DD)
-        df["Check-in"] = pd.to_datetime(df["Check-in"]).dt.date
-        df["Check-out"] = pd.to_datetime(df["Check-out"]).dt.date
+        # Converte as colunas de data para texto puro no formato YYYY-MM-DD
+        df["Check-in"] = pd.to_datetime(df["Check-in"]).dt.strftime('%Y-%m-%d')
+        df["Check-out"] = pd.to_datetime(df["Check-out"]).dt.strftime('%Y-%m-%d')
         
         df = df.sort_values(by="Check-in", ascending=True)
-    
-    print("Dados processados com sucesso. Enviando para o Google Drive...")
-    
-else:
-    print(f"Erro ao buscar reservas: {response.status_code} - {response.text}")
- 
+        
+        print("Dados processados com sucesso. Enviando para o Google Drive...")
+    else:
+        print(f"Erro ao buscar reservas: {response.status_code} - {response.text}")
+
     # Salvando em Excel
     # nome_arquivo = "Agenda_Studio_Clean_Final.xlsx"
     # df.to_excel(nome_arquivo, index=False)
