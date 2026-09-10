@@ -102,15 +102,26 @@ if response.status_code == 200:
 # ==========================================
 # BLOCO 2: CONEXÃO COM O GOOGLE DRIVE (GSPREAD)
 # ==========================================
+import json
+import os
+
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
 ]
 
-# Nome exato do arquivo JSON que está na sua pasta (e que você vai subir no GitHub junto com este script)
-CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
+# Puxa o JSON de credenciais que está guardado de forma segura nos Secrets do GitHub
+google_creds_json = os.environ.get("GOOGLE_CREDENTIALS")
 
-creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
+if google_creds_json:
+    # Se rodando no GitHub Actions (lendo do Secret)
+    creds_dict = json.loads(google_creds_json)
+    creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+else:
+    # Se por acaso você rodar localmente na sua máquina usando o arquivo físico
+    CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
+    creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
+
 client = gspread.authorize(creds)
 
 # ==========================================
