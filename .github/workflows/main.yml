@@ -28,6 +28,7 @@ jobs:
         run: |
           python studio_clean_sync_3.py
         env:
+          GOOGLE_CREDENTIALS_B64: ${{ secrets.GOOGLE_CREDENTIALS_B64 }}
           MEU_EMAIL: ${{ secrets.MEU_EMAIL }}
           SENHA_APP: ${{ secrets.SENHA_APP }}
           PYTHONUNBUFFERED: '1'
