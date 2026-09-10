@@ -102,24 +102,52 @@ if response.status_code == 200:
 # ==========================================
 # BLOCO 2: CONEXÃO COM O GOOGLE DRIVE (GSPREAD)
 # ==========================================
-import json
+import os
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
 ]
 
-CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
+# Puxa diretamente dos Secrets individuais que criamos antes
+client_email = os.environ.get("GOOGLE_CLIENT_EMAIL")
+private_key = os.environ.get("GOOGLE_PRIVATE_KEY")
 
-# Lê o arquivo JSON e repara a chave privada caso o GitHub tenha alterado as quebras de linha
-with open(CREDENTIALS_FILE, "r", encoding="utf-8") as f:
-    creds_dict = json.load(f)
+if client_email and private_key:
+    # Remove aspas caso tenham sido coladas por engano
+    private_key = private_key.strip('"').strip("'")
+    
+    # Se a chave veio tudo em uma linha única, recriamos as quebras de linha oficiais do PEM de forma programática
+    if "-----BEGIN PRIVATE KEY-----" in private_key and "\n" not in private_key.strip():
+        private_key = private_key.replace("-----BEGIN PRIVATE KEY-----", "-----BEGIN PRIVATE KEY-----\n")
+        private_key = private_key.replace("-----END PRIVATE KEY-----", "\n-----END PRIVATE KEY-----")
+        # Insere quebras a cada 64 caracteres caso tenha virado um bloco corrido
+        body = private_key.replace("-----BEGIN PRIVATE KEY-----\n", "").replace("\n-----END PRIVATE KEY-----", "")
+        chunks = [body[i:i+64] for i in range(0, len(body), 64)]
+        private_key = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(chunks) + "\n-----END PRIVATE KEY-----\n"
+    else:
+        # Garante a normalização padrão de "\n"
+        private_key = private_key.replace("\\n", "\n")
 
-if "private_key" in creds_dict:
-    # Substitui literais e normaliza o formato RSA para garantir uma assinatura válida
-    creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+    creds_dict = {
+        "type": "service_account",
+        "project_id": "studiocleanautomation",
+        "private_key_id": "cb99c084c8f8993ca1c80a838704f2638782af2d",
+        "private_key": private_key,
+        "client_email": client_email,
+        "client_id": "106042217826893318631",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/robo-studio-clean%40studiocleanautomation.iam.gserviceaccount.com",
+        "universe_domain": "googleapis.com"
+    }
+    creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+else:
+    # Fallback local
+    CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
+    creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
 
-creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
 client = gspread.authorize(creds)
 
 # ==========================================
