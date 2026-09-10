@@ -102,7 +102,6 @@ if response.status_code == 200:
 # ==========================================
 # BLOCO 2: CONEXÃO COM O GOOGLE DRIVE (GSPREAD)
 # ==========================================
-import json
 import os
 
 SCOPES = [
@@ -110,22 +109,34 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
-google_creds_json = os.environ.get("GOOGLE_CREDENTIALS")
+# Puxa as credenciais limpas direto dos Secrets individuais
+client_email = os.environ.get("GOOGLE_CLIENT_EMAIL")
+private_key = os.environ.get("GOOGLE_PRIVATE_KEY")
 
-if google_creds_json:
-    creds_dict = json.loads(google_creds_json)
+if client_email and private_key:
+    # Garante que as quebras de linha da chave privada sejam interpretadas corretamente
+    private_key = private_key.replace("\\n", "\n")
     
-    # CORREÇÃO DA CHAVE PRIVADA: Garante que o formato das quebras de linha "\n" seja respeitado
-    if "private_key" in creds_dict:
-        creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
-        
+    creds_dict = {
+        "type": "service_account",
+        "project_id": "studiocleanautomation",
+        "private_key_id": "cb99c084c8f8993ca1c80a838704f2638782af2d",
+        "private_key": private_key,
+        "client_email": client_email,
+        "client_id": "106042217826893318631",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/robo-studio-clean%40studiocleanautomation.iam.gserviceaccount.com",
+        "universe_domain": "googleapis.com"
+    }
     creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
 else:
+    # Caso rode localmente na sua máquina usando o arquivo físico original
     CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
     creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
 
 client = gspread.authorize(creds)
-
 
 # ==========================================
 # BLOCO 3: ATUALIZAÇÃO DA PLANILHA NA NUVEM
