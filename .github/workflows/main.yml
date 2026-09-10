@@ -21,7 +21,7 @@ jobs:
         run: |
           pip install requests pandas gspread google-auth
 
-           - name: Rodar o script de atualização
+      - name: Rodar o script de atualização
         run: |
           python studio_clean_sync_3.py
         env:
