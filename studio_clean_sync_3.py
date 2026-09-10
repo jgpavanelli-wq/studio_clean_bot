@@ -100,7 +100,7 @@ if response.status_code == 200:
     # Mostra uma prévia na tela
     
 # ==========================================
-# BLOCO 2: CONEXÃO COM O GOOGLE DRIVE (GSPREAD)
+# BLOCO 2: CONEXÃO COM OS GOOGLE SHEETS
 # ==========================================
 import os
 import base64
@@ -111,23 +111,20 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
-CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
+creds_b64 = os.environ.get("GOOGLE_CREDENTIALS_B64")
 
-if os.path.exists(CREDENTIALS_FILE):
-    print("Lendo o arquivo JSON físico diretamente do repositório para teste...")
-    with open(CREDENTIALS_FILE, "rb") as f:
-        file_bytes = f.read()
-        # Imprime no log do GitHub o Base64 100% perfeito gerado pelo próprio ambiente
-        print("--- COPIE O BASEMAN ABAIXO SE PRECISAR ---")
-        print(base64.b64encode(file_bytes).decode("utf-8"))
-        print("------------------------------------------")
-    creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
-else:
-    # Se por acaso não achar o arquivo, tenta ler do Secret Base64
-    creds_b64 = os.environ.get("GOOGLE_CREDENTIALS_B64")
+if creds_b64:
     json_bytes = base64.b64decode(creds_b64)
     creds_dict = json.loads(json_bytes.decode("utf-8"))
+    
+    # Corrige explicitamente as quebras de linha em formato texto para quebras reais do RSA
+    if "private_key" in creds_dict:
+        creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+        
     creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+else:
+    CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
+    creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
 
 client = gspread.authorize(creds)
 
