@@ -21,13 +21,14 @@ jobs:
         run: |
           pip install requests pandas gspread google-auth
 
+      - name: Sincronizar relógio do sistema (NTP)
+        run: sudo ntpdate -s time.google.com || sudo timedatectl set-ntp true
+
       - name: Rodar o script de atualização
         run: |
           python studio_clean_sync_3.py
         env:
           MEU_EMAIL: ${{ secrets.MEU_EMAIL }}
           SENHA_APP: ${{ secrets.SENHA_APP }}
-          GOOGLE_CLIENT_EMAIL: ${{ secrets.GOOGLE_CLIENT_EMAIL }}
-          GOOGLE_PRIVATE_KEY: ${{ secrets.GOOGLE_PRIVATE_KEY }}
           PYTHONUNBUFFERED: '1'
 
