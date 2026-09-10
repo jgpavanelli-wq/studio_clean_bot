@@ -96,13 +96,10 @@ else:
     # Salvando em Excel
     # nome_arquivo = "Agenda_Studio_Clean_Final.xlsx"
     # df.to_excel(nome_arquivo, index=False)
-    print("Dados processados com sucesso. Enviando para o Google Drive")
+    # print("Dados processados com sucesso. Enviando para o Google Drive")
     
     # Mostra uma prévia na tela
     
-else:
-    print(f"Erro ao buscar reservas: {response.status_code} - {response.text}")
-
 # ==========================================
 # BLOCO 2: CONEXÃO COM O GOOGLE DRIVE (GSPREAD)
 # ==========================================
