@@ -143,7 +143,7 @@ def enviar_email_atualizacao(link_planilha, destinatario):
     msg = EmailMessage()
     msg['Subject'] = 'Agenda Studio Clean Atualizada'
     msg['From'] = EMAIL_ORIGEM
-    msg['To'] = atendimentostudioclean@gmail.com
+    msg['To'] = "atendimentostudioclean@gmail.com"
     
     conteudo = f"""
     Olá!
@@ -169,4 +169,5 @@ def enviar_email_atualizacao(link_planilha, destinatario):
         print(f"Erro ao enviar o e-mail: {e}")
 
 # Chame a função passando o link da sua planilha e o e-mail do cliente:
-# enviar_email_atualizacao("https://docs.google.com/spreadsheets/d/SEU_LINK_AQUI", "cliente@email.com")
+# Chame a função passando o link da sua planilha e o e-mail do cliente:
+enviar_email_atualizacao("https://docs.google.com/spreadsheets/d/15eNX1NkBrUG3AhEaiaoFw39h_z4Pj-0ulqGk6vJgpVQ/edit?usp=drive_link", "atendimentostudioclean@gmail.com")
