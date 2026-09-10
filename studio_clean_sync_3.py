@@ -134,8 +134,8 @@ from email.message import EmailMessage
 
 def enviar_email_atualizacao(link_planilha, destinatario):
     # Puxa as credenciais de forma segura das variaveis de ambiente do GitHub
-    EMAIL_ORIGEM = os.environ.get("EMAIL_ORIGEM")
-    SENHA_APLICATIVO = os.environ.get("SENHA_APLICATIVO)
+    EMAIL_ORIGEM = os.environ.get("MEU_EMAIL")
+    SENHA_APLICATIVO = os.environ.get("SENHA_APP")
     
     msg = EmailMessage()
     msg['Subject'] = 'Agenda Studio Clean Atualizada'
