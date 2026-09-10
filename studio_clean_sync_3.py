@@ -102,6 +102,8 @@ if response.status_code == 200:
 # ==========================================
 # BLOCO 2: CONEXÃO COM O GOOGLE DRIVE (GSPREAD)
 # ==========================================
+import os
+import base64
 import json
 
 SCOPES = [
@@ -109,20 +111,20 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
-CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
+creds_b64 = os.environ.get("GOOGLE_CREDENTIALS_B64")
 
-# Lê o arquivo diretamente e reconstrói o objeto de credenciais limpando o PEM
-with open(CREDENTIALS_FILE, "r", encoding="utf-8") as f:
-    info = json.load(f)
+if creds_b64:
+    creds_b64_clean = creds_b64.strip().encode("ascii", "ignore")
+    json_bytes = base64.b64decode(creds_b64_clean)
+    creds_dict = json.loads(json_bytes.decode("utf-8", errors="ignore"))
+    
+    if "private_key" in creds_dict:
+        creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+        
+    creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+else:
+    raise ValueError("O Secret GOOGLE_CREDENTIALS_B64 não foi configurado no GitHub Actions!")
 
-# Corrige as quebras da chave privada de forma garantida
-if "private_key" in info:
-    pk = info["private_key"]
-    if "\\n" in pk:
-        pk = pk.replace("\\n", "\n")
-    info["private_key"] = pk
-
-creds = Credentials.from_service_account_info(info, scopes=SCOPES)
 client = gspread.authorize(creds)
 
 # ==========================================
