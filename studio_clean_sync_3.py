@@ -79,11 +79,20 @@ if response.status_code == 200:
             "Toalhas de Banho": toalhas_banho
         })
     
-    # Criando o DataFrame e ordenando cronologicamente
+       # Criando o DataFrame e ordenando cronologicamente
     df = pd.DataFrame(lista_processada)
     if not df.empty:
+        # Converte as colunas de texto para datas reais do formato ISO (YYYY-MM-DD)
+        df["Check-in"] = pd.to_datetime(df["Check-in"]).dt.date
+        df["Check-out"] = pd.to_datetime(df["Check-out"]).dt.date
+        
         df = df.sort_values(by="Check-in", ascending=True)
     
+    print("Dados processados com sucesso. Enviando para o Google Drive...")
+    
+else:
+    print(f"Erro ao buscar reservas: {response.status_code} - {response.text}")
+ 
     # Salvando em Excel
     # nome_arquivo = "Agenda_Studio_Clean_Final.xlsx"
     # df.to_excel(nome_arquivo, index=False)
@@ -122,3 +131,42 @@ data_to_upload = [df.columns.tolist()] + df.values.tolist()
 sheet.update("A1", data_to_upload)
 
 print("Dados do Stays puxados e planilha atualizada com sucesso na nuvem!")
+
+import smtplib
+from email.message import EmailMessage
+
+def enviar_email_atualizacao(link_planilha, destinatario):
+    # Configurações do remetente (recomendo criar uma senha de aplicativo no seu e-mail)
+    EMAIL_ORIGEM = "jgpavanelli@gmail.com"
+    SENHA_APLICATIVO = "ikmvuopzzbnyerzy"
+    
+    msg = EmailMessage()
+    msg['Subject'] = 'Agenda Studio Clean Atualizada'
+    msg['From'] = EMAIL_ORIGEM
+    msg['To'] = atendimentostudioclean@gmail.com
+    
+    conteudo = f"""
+    Olá!
+    
+    A agenda de reservas do Studio Clean foi atualizada com sucesso no horário programado.
+    Você pode acessar os dados mais recentes através do link abaixo:
+    
+    {link_planilha}
+    
+    Atenciosamente,
+    Automação Studio Clean
+    """
+    
+    msg.set_content(conteudo)
+    
+    try:
+        # Conectando ao servidor SMTP do Gmail (ou outro provedor)
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(EMAIL_ORIGEM, SENHA_APLICATIVO)
+            smtp.send_message(msg)
+        print("E-mail de notificação enviado com sucesso!")
+    except Exception as e:
+        print(f"Erro ao enviar o e-mail: {e}")
+
+# Chame a função passando o link da sua planilha e o e-mail do cliente:
+# enviar_email_atualizacao("https://docs.google.com/spreadsheets/d/SEU_LINK_AQUI", "cliente@email.com")
