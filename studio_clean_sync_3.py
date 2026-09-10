@@ -109,25 +109,19 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
-# Puxa diretamente dos Secrets individuais que criamos antes
 client_email = os.environ.get("GOOGLE_CLIENT_EMAIL")
 private_key = os.environ.get("GOOGLE_PRIVATE_KEY")
 
 if client_email and private_key:
-    # Remove aspas caso tenham sido coladas por engano
+    # Limpa aspas e garante substituição correta de escapes problemáticos
     private_key = private_key.strip('"').strip("'")
     
-    # Se a chave veio tudo em uma linha única, recriamos as quebras de linha oficiais do PEM de forma programática
-    if "-----BEGIN PRIVATE KEY-----" in private_key and "\n" not in private_key.strip():
-        private_key = private_key.replace("-----BEGIN PRIVATE KEY-----", "-----BEGIN PRIVATE KEY-----\n")
-        private_key = private_key.replace("-----END PRIVATE KEY-----", "\n-----END PRIVATE KEY-----")
-        # Insere quebras a cada 64 caracteres caso tenha virado um bloco corrido
-        body = private_key.replace("-----BEGIN PRIVATE KEY-----\n", "").replace("\n-----END PRIVATE KEY-----", "")
-        chunks = [body[i:i+64] for i in range(0, len(body), 64)]
-        private_key = "-----BEGIN PRIVATE KEY-----\n" + "\n".join(chunks) + "\n-----END PRIVATE KEY-----\n"
-    else:
-        # Garante a normalização padrão de "\n"
+    # Se houver '\n' em formato de texto, convertemos para quebra real
+    if "\\n" in private_key:
         private_key = private_key.replace("\\n", "\n")
+        
+    # Garante que as linhas de início e fim estejam limpas
+    private_key = private_key.replace("\r\n", "\n")
 
     creds_dict = {
         "type": "service_account",
@@ -144,7 +138,6 @@ if client_email and private_key:
     }
     creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
 else:
-    # Fallback local
     CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
     creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
 
