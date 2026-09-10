@@ -100,7 +100,7 @@ if response.status_code == 200:
     # Mostra uma prévia na tela
     
 # ==========================================
-# BLOCO 2: CONEXÃO COM OS GOOGLE SHEETS
+# BLOCO 2: CONEXÃO COM O GOOGLE DRIVE (GSPREAD)
 # ==========================================
 import os
 import base64
@@ -114,10 +114,11 @@ SCOPES = [
 creds_b64 = os.environ.get("GOOGLE_CREDENTIALS_B64")
 
 if creds_b64:
-    json_bytes = base64.b64decode(creds_b64)
+    # Limpa espaços e garante conversão ASCII limpa antes de decodificar
+    creds_b64_clean = creds_b64.strip().encode("ascii", "ignore")
+    json_bytes = base64.b64decode(creds_b64_clean)
     creds_dict = json.loads(json_bytes.decode("utf-8"))
     
-    # Corrige explicitamente as quebras de linha em formato texto para quebras reais do RSA
     if "private_key" in creds_dict:
         creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
         
