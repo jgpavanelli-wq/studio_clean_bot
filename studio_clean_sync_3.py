@@ -109,38 +109,10 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
-client_email = os.environ.get("GOOGLE_CLIENT_EMAIL")
-private_key = os.environ.get("GOOGLE_PRIVATE_KEY")
+# Lê diretamente o arquivo original que está na pasta do projeto, sem intermediários
+CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
 
-if client_email and private_key:
-    # Limpa aspas e garante substituição correta de escapes problemáticos
-    private_key = private_key.strip('"').strip("'")
-    
-    # Se houver '\n' em formato de texto, convertemos para quebra real
-    if "\\n" in private_key:
-        private_key = private_key.replace("\\n", "\n")
-        
-    # Garante que as linhas de início e fim estejam limpas
-    private_key = private_key.replace("\r\n", "\n")
-
-    creds_dict = {
-        "type": "service_account",
-        "project_id": "studiocleanautomation",
-        "private_key_id": "cb99c084c8f8993ca1c80a838704f2638782af2d",
-        "private_key": private_key,
-        "client_email": client_email,
-        "client_id": "106042217826893318631",
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/robo-studio-clean%40studiocleanautomation.iam.gserviceaccount.com",
-        "universe_domain": "googleapis.com"
-    }
-    creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
-else:
-    CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
-    creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
-
+creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
 client = gspread.authorize(creds)
 
 # ==========================================
