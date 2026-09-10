@@ -128,13 +128,14 @@ sheet.update("A1", data_to_upload)
 
 print("Dados do Stays puxados e planilha atualizada com sucesso na nuvem!")
 
+import os
 import smtplib
 from email.message import EmailMessage
 
 def enviar_email_atualizacao(link_planilha, destinatario):
-    # Configurações do remetente (recomendo criar uma senha de aplicativo no seu e-mail)
-    EMAIL_ORIGEM = "jgpavanelli@gmail.com"
-    SENHA_APLICATIVO = "ikmvuopzzbnyerzy"
+    # Puxa as credenciais de forma segura das variaveis de ambiente do GitHub
+    EMAIL_ORIGEM = os.environ.get("EMAIL_ORIGEM")
+    SENHA_APLICATIVO = os.environ.get("SENHA_APLICATIVO)
     
     msg = EmailMessage()
     msg['Subject'] = 'Agenda Studio Clean Atualizada'
