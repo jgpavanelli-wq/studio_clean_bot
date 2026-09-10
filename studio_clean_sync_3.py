@@ -103,36 +103,23 @@ if response.status_code == 200:
 # BLOCO 2: CONEXÃO COM O GOOGLE DRIVE (GSPREAD)
 # ==========================================
 import os
+import base64
+import json
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
 ]
 
-# Puxa as credenciais limpas direto dos Secrets individuais
-client_email = os.environ.get("GOOGLE_CLIENT_EMAIL")
-private_key = os.environ.get("GOOGLE_PRIVATE_KEY")
+creds_b64 = os.environ.get("GOOGLE_CREDENTIALS_B64")
 
-if client_email and private_key:
-    # Garante que as quebras de linha da chave privada sejam interpretadas corretamente
-    private_key = private_key.replace("\\n", "\n")
-    
-    creds_dict = {
-        "type": "service_account",
-        "project_id": "studiocleanautomation",
-        "private_key_id": "cb99c084c8f8993ca1c80a838704f2638782af2d",
-        "private_key": private_key,
-        "client_email": client_email,
-        "client_id": "106042217826893318631",
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
-        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-        "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/robo-studio-clean%40studiocleanautomation.iam.gserviceaccount.com",
-        "universe_domain": "googleapis.com"
-    }
+if creds_b64:
+    # Decodifica a string base64 de volta para o JSON original perfeitamente intacto
+    json_bytes = base64.b64decode(creds_b64)
+    creds_dict = json.loads(json_bytes.decode("utf-8"))
     creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
 else:
-    # Caso rode localmente na sua máquina usando o arquivo físico original
+    # Caso por acaso rode localmente na sua máquina
     CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
     creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
 
