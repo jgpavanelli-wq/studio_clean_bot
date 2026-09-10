@@ -21,10 +21,11 @@ jobs:
         run: |
           pip install requests pandas gspread google-auth
 
-      - name: Rodar o script de atualização
+           - name: Rodar o script de atualização
         run: |
           python studio_clean_sync_3.py
         env:
           MEU_EMAIL: ${{ secrets.MEU_EMAIL }}
           SENHA_APP: ${{ secrets.SENHA_APP }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
           PYTHONUNBUFFERED: '1'
