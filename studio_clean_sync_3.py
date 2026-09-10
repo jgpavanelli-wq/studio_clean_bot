@@ -110,19 +110,22 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 
-# Puxa o JSON de credenciais que está guardado de forma segura nos Secrets do GitHub
 google_creds_json = os.environ.get("GOOGLE_CREDENTIALS")
 
 if google_creds_json:
-    # Se rodando no GitHub Actions (lendo do Secret)
     creds_dict = json.loads(google_creds_json)
+    
+    # CORREÇÃO DA CHAVE PRIVADA: Garante que o formato das quebras de linha "\n" seja respeitado
+    if "private_key" in creds_dict:
+        creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+        
     creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
 else:
-    # Se por acaso você rodar localmente na sua máquina usando o arquivo físico
     CREDENTIALS_FILE = "studiocleanautomation-cb99c084c8f8.json"
     creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
 
 client = gspread.authorize(creds)
+
 
 # ==========================================
 # BLOCO 3: ATUALIZAÇÃO DA PLANILHA NA NUVEM
