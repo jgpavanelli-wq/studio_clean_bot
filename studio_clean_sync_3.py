@@ -5,7 +5,7 @@ import requests  # (ou a biblioteca que você usa para chamar a API da Stays)
 from datetime import datetime
 
 # ==========================================
-# BLOCO 1: SEU CÓDIGO DA STAYS.NET (EXEMPLO)
+# BLOCO 1: SEU CÓDIGO DA STAYS.NET (CORRIGIDO)
 # ==========================================
 import requests
 import base64
@@ -79,18 +79,24 @@ if response.status_code == 200:
             "Toalhas de Banho": toalhas_banho
         })
     
-           # Criando o DataFrame e ordenando cronologicamente
-        df = pd.DataFrame(lista_processada)
+    # Criando o DataFrame FORA do loop (com segurança)
+    df = pd.DataFrame(lista_processada)
+    
     if not df.empty:
-        # Converte as colunas de data para texto puro no formato YYYY-MM-DD
         df["Check-in"] = pd.to_datetime(df["Check-in"]).dt.strftime('%Y-%m-%d')
         df["Check-out"] = pd.to_datetime(df["Check-out"]).dt.strftime('%Y-%m-%d')
-        
         df = df.sort_values(by="Check-in", ascending=True)
-        
         print("Dados processados com sucesso. Enviando para o Google Drive...")
     else:
-        print(f"Erro ao buscar reservas: {response.status_code} - {response.text}")
+        print("Nenhuma reserva encontrada no período, mas a conexão ocorreu com sucesso.")
+        # Cria um DataFrame vazio com as colunas esperadas para o script não quebrar
+        df = pd.DataFrame(columns=[
+            "Check-in", "Check-out", "Unidade / Apto", "Hóspedes", 
+            "Travesseiros", "Fronhas", "Jogos de Lençóis", "Cobertores", 
+            "Panos de Prato", "Toalhas de Rosto", "Toalhas de Banho"
+        ])
+else:
+    raise Exception(f"Erro ao buscar reservas na Stays: {response.status_code} - {response.text}")
 
     # Salvando em Excel
     # nome_arquivo = "Agenda_Studio_Clean_Final.xlsx"
