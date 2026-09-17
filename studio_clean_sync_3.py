@@ -160,7 +160,7 @@ def enviar_email_atualizacao(link_planilha, destinatario):
     msg = EmailMessage()
     msg['Subject'] = 'Agenda Studio Clean Atualizada'
     msg['From'] = EMAIL_ORIGEM
-    msg['To'] = "atendimentostudioclean@gmail.com"
+    msg['To'] = "studioclean013@gmail.com"
     
     conteudo = f"""
     Olá!
