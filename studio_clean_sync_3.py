@@ -5,13 +5,14 @@ import requests  # (ou a biblioteca que você usa para chamar a API da Stays)
 from datetime import datetime
 
 # ==========================================
-# BLOCO 1: SEU CÓDIGO DA STAYS.NET (CORRIGIDO)
+# BLOCO 1: SEU CÓDIGO DA STAYS.NET (COM RETRY AUTOMÁTICO)
 # ==========================================
 import requests
 import base64
 import json
 import pandas as pd
 from datetime import datetime, timedelta
+import time
 
 # 1. Configurações de Acesso
 base_url = "https://www.booksantos.com.br"
@@ -40,9 +41,29 @@ payload = {
 }
 
 print(f"Buscando reservas de {payload['from']} até {payload['to']}...")
-response = requests.post(endpoint, headers=headers, json=payload)
 
-if response.status_code == 200:
+# Mecanismo de Tentativa Automática (Retry) para erros 500 da Stays
+max_tentativas = 3
+tentativa = 0
+response = None
+
+while tentativa < max_tentativas:
+    tentativa += 1
+    try:
+        response = requests.post(endpoint, headers=headers, json=payload, timeout=30)
+        if response.status_code == 200:
+            break
+        elif response.status_code >= 500:
+            print(f"Servidor da Stays instável (Erro {response.status_code}). Tentativa {tentativa} de {max_tentativas}. Aguardando 15 segundos...")
+            time.sleep(15)
+        else:
+            break
+    except requests.exceptions.RequestException as e:
+        print(f"Erro de conexão na tentativa {tentativa}: {e}. Tentando novamente em 15 segundos...")
+        time.sleep(15)
+
+# Processamento após as tentativas
+if response and response.status_code == 200:
     reservas = response.json()
     print(f"Sucesso! {len(reservas)} reservas encontradas. Processando...")
     
@@ -89,21 +110,15 @@ if response.status_code == 200:
         print("Dados processados com sucesso. Enviando para o Google Drive...")
     else:
         print("Nenhuma reserva encontrada no período, mas a conexão ocorreu com sucesso.")
-        # Cria um DataFrame vazio com as colunas esperadas para o script não quebrar
         df = pd.DataFrame(columns=[
             "Check-in", "Check-out", "Unidade / Apto", "Hóspedes", 
             "Travesseiros", "Fronhas", "Jogos de Lençóis", "Cobertores", 
             "Panos de Prato", "Toalhas de Rosto", "Toalhas de Banho"
         ])
 else:
-    raise Exception(f"Erro ao buscar reservas na Stays: {response.status_code} - {response.text}")
-
-    # Salvando em Excel
-    # nome_arquivo = "Agenda_Studio_Clean_Final.xlsx"
-    # df.to_excel(nome_arquivo, index=False)
-    # print("Dados processados com sucesso. Enviando para o Google Drive")
-    
-    # Mostra uma prévia na tela
+    status = response.status_code if response else "Desconhecido"
+    text = response.text if response else "Sem resposta"
+    raise Exception(f"Erro ao buscar reservas na Stays após {max_tentativas} tentativas: {status} - {text}")
     
 # ==========================================
 # BLOCO 2: CONEXÃO COM O GOOGLE DRIVE (GSPREAD)
