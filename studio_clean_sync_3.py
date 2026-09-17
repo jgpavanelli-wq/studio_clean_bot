@@ -187,4 +187,4 @@ def enviar_email_atualizacao(link_planilha, destinatario):
 
 # Chame a função passando o link da sua planilha e o e-mail do cliente:
 # Chame a função passando o link da sua planilha e o e-mail do cliente:
-enviar_email_atualizacao("https://docs.google.com/spreadsheets/d/15eNX1NkBrUG3AhEaiaoFw39h_z4Pj-0ulqGk6vJgpVQ/edit?usp=drive_link", "atendimentostudioclean@gmail.com")
+enviar_email_atualizacao("https://docs.google.com/spreadsheets/d/15eNX1NkBrUG3AhEaiaoFw39h_z4Pj-0ulqGk6vJgpVQ/edit?usp=drive_link", "studioclean013@gmail.com")
