@@ -70,6 +70,12 @@ while not encontrou_grupo:
 if not listing_ids_permitidos:
     print("Aviso: O grupo 'Governança Amanda' não foi encontrado ou está vazio. Prosseguindo sem filtro de grupo.")
 
+print(f"Total de IDs permitidos encontrados no grupo: {len(listing_ids_permitidos)}")
+if len(listing_ids_permitidos) > 0:
+    print(f"Exemplo de ID permitido: {listing_ids_permitidos[0]}")
+else:
+    print("ATENÇÃO: O grupo não retornou nenhum ID. O nome pode estar incorreto.")
+
 # 2. Janela Dinâmica Inteligente (60 dias para trás e 60 dias para frente)
 hoje = datetime.now().date()
 data_inicio = hoje - timedelta(days=60)
@@ -170,6 +176,9 @@ if response and response.status_code == 200:
             "Travesseiros", "Fronhas", "Jogos de Lençóis", "Cobertores", 
             "Panos de Prato", "Toalhas de Rosto", "Toalhas de Banho"
         ])
+
+print(f"Reservas brutas: {len(reservas)} | Reservas após o filtro do grupo: {len(lista_processada)}")
+
 else:
     status = response.status_code if response else "Desconhecido"
     text = response.text if response else "Sem resposta"
