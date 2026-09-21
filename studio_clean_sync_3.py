@@ -119,7 +119,10 @@ if response and response.status_code == 200:
             if childs:
                 id_imovel = childs[0].get("id") or childs[0].get("_idlisting")
 
-        # Ignora unidades de São Paulo que estão fora da gestão da Studio Clean
+        # 1. Primeiro definimos o nome da unidade
+        nome_unidade = listing_info.get("internalName", "Não informado")
+
+        # 2. Depois fazemos o filtro para ignorar unidades indesejadas que comecem com "SP_"
         if nome_unidade.startswith("SP_"):
             continue  # Pula esta reserva indesejada
 
