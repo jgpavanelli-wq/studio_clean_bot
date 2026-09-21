@@ -111,18 +111,12 @@ if response and response.status_code == 200:
     
     lista_processada = []
     
-# Vamos inspecionar a primeira reserva para entendermos o formato exato da Stays
-    if len(reservas) > 0:
-        print("--- DIAGNÓSTICO DA PRIMEIRA RESERVA ---")
-        print(reservas[0])
-        print("---------------------------------------")
-
-for r in reservas:
-        # Pega o ID do imóvel dentro do dicionário 'listing' (ex: 'RK01I')
+    for r in reservas:
+        # Pega o ID do imóvel correto dentro do dicionário 'listing' (ex: 'RK01I')
         listing_info = r.get("listing", {})
         id_imovel = listing_info.get("id")
         
-        # Caso alternativo caso venha direto em outro campo
+        # Caso alternativo de segurança
         if not id_imovel:
             id_imovel = r.get("_idlisting") or r.get("listingId")
 
@@ -141,8 +135,7 @@ for r in reservas:
         hospedes = r.get("guestTotalCount", 1)
         
         # Dados do imóvel (Unidade)
-        listing = r.get("listing", {})
-        nome_unidade = listing.get("internalName", "Não informado")
+        nome_unidade = listing_info.get("internalName", "Não informado")
         
         # Regra de Cálculo de Enxoval por Hóspede
         travesseiros = hospedes * 2
@@ -184,7 +177,7 @@ for r in reservas:
 else:
     status = response.status_code if response else "Desconhecido"
     text = response.text if response else "Sem resposta"
-    raise Exception(f"Erro ao buscar reservas na Stays após {max_tentativas} tentativas: {status} - {text}")    
+    raise Exception(f"Erro ao buscar reservas na Stays após {max_tentativas} tentativas: {status} - {text}") 
 
 # ==========================================
 # BLOCO 2: CONEXÃO COM O GOOGLE DRIVE (GSPREAD)
