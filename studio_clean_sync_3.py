@@ -104,31 +104,58 @@ while tentativa < max_tentativas:
         print(f"Erro de conexão na tentativa {tentativa}: {e}. Tentando novamente em 15 segundos...")
         time.sleep(15)
 
-# Processamento e Filtragem após as tentativas
-if response and response.status_code == 200:
-    reservas = response.json()
-    print(f"Sucesso! {len(reservas)} reservas brutas encontradas. Aplicando filtro do grupo...")
+# Processamento e Filtragem com diagnóstico de IDs
+lista_processada = []
+contador_teste = 0
     
-    lista_processada = []
-    
-    for r in reservas:
-        # Pega o ID do imóvel correto dentro do dicionário 'listing' (ex: 'RK01I')
-        listing_info = r.get("listing", {})
-        id_imovel = listing_info.get("id")
+for r in reservas:
+    listing_info = r.get("listing", {})
+    id_imovel = listing_info.get("id")
         
-        # Caso alternativo de segurança
-        if not id_imovel:
-            id_imovel = r.get("_idlisting") or r.get("listingId")
+    if not id_imovel:
+        id_imovel = r.get("_idlisting") or r.get("listingId")
 
-        # Tratamento para isMaster (caso venha agrupado, pega o child)
-        if r.get("isMaster") == True:
-            childs = r.get("childs", [])
-            if childs:
-                id_imovel = childs[0].get("id") or childs[0].get("_idlisting")
+    if r.get("isMaster") == True:
+        childs = r.get("childs", [])
+        if childs:
+            id_imovel = childs[0].get("id") or childs[0].get("_idlisting")
 
-        # Se identificamos um filtro de grupo, descarta o que estiver fora dele
-        if listing_ids_permitidos and id_imovel not in listing_ids_permitidos:
-            continue  # Pula esta reserva pois não pertence ao "Governança Amanda"
+    # Imprime os primeiros 3 cruzamentos para diagnosticarmos o formato
+    if contador_teste < 3:
+        print(f"[DIAGNÓSTICO ID] ID da Reserva: {id_imovel} | Está na lista do grupo? {id_imovel in listing_ids_permitidos}")
+        if len(listing_ids_permitidos) > 0:
+            print(f"[DIAGNÓSTICO ID] Exemplo de ID que está no grupo: {listing_ids_permitidos[0]}")
+        contador_teste += 1
+
+    # Se identificamos um filtro de grupo, descarta o que estiver fora dele
+    if listing_ids_permitidos and id_imovel not in listing_ids_permitidos:
+        continue  # Pula esta reserva
+
+    check_in = r.get("checkInDate")
+    check_out = r.get("checkOutDate")
+    hospedes = r.get("guestTotalCount", 1)
+    nome_unidade = listing_info.get("internalName", "Não informado")
+        
+    travesseiros = hospedes * 2
+    fronhas = hospedes * 2
+    lençóis = hospedes * 1
+    cobertores = hospedes * 1
+    toalhas_rosto = hospedes * 1
+    toalhas_banho = hospedes * 1
+        
+    lista_processada.append({
+        "Check-in": check_in,
+        "Check-out": check_out,
+        "Unidade / Apto": nome_unidade,
+        "Hóspedes": hospedes,
+        "Travesseiros": travesseiros,
+        "Fronhas": fronhas,
+        "Jogos de Lençóis": lençóis,
+        "Cobertores": cobertores,
+        "Panos de Prato": 2,
+        "Toalhas de Rosto": toalhas_rosto,
+        "Toalhas de Banho": toalhas_banho
+    })
 
         check_in = r.get("checkInDate")
         check_out = r.get("checkOutDate")
