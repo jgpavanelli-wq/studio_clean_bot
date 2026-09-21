@@ -111,9 +111,25 @@ if response and response.status_code == 200:
     
     lista_processada = []
     
+# Vamos inspecionar a primeira reserva para entendermos o formato exato da Stays
+    if len(reservas) > 0:
+        print("--- DIAGNÓSTICO DA PRIMEIRA RESERVA ---")
+        print(reservas[0])
+        print("---------------------------------------")
+
     for r in reservas:
-        # Identifica o ID do imóvel real da reserva
-        id_imovel = r.get("_idlisting")
+        # Tenta pegar o ID do imóvel por diferentes nomes que a Stays costuma usar
+        id_imovel = r.get("_idlisting") or r.get("listingId") or r.get("idListing") or r.get("id_listing")
+        
+        # Tratamento para isMaster (caso venha agrupado, pega o child)
+        if r.get("isMaster") == True:
+            childs = r.get("childs", [])
+            if childs:
+                id_imovel = childs[0].get("_idlisting") or childs[0].get("listingId") or childs[0].get("idListing")
+
+        # Se identificamos um filtro de grupo, descarta o que estiver fora dele
+        if listing_ids_permitidos and id_imovel not in listing_ids_permitidos:
+            continue  # Pula esta reserva
         
         # Tratamento para isMaster (caso venha agrupado, pega o child)
         if r.get("isMaster") == True:
