@@ -5,7 +5,7 @@ import requests  # (ou a biblioteca que você usa para chamar a API da Stays)
 from datetime import datetime
 
 # ==========================================
-# BLOCO 1: SEU CÓDIGO DA STAYS.NET (COM RETRY AUTOMÁTICO)
+# BLOCO 1: SEU CÓDIGO DA STAYS.NET (COM FILTRO DO GRUPO "Governança Amanda")
 # ==========================================
 import requests
 import base64
@@ -14,19 +14,61 @@ import pandas as pd
 from datetime import datetime, timedelta
 import time
 
-# 1. Configurações de Acesso
+# 1. Configurações de Acesso Gerais e de Conteúdo
 base_url = "https://www.booksantos.com.br"
-username = "09af95bc"
-password = "3c4699d1"
 
-credentials = f"{username}:{password}"
-encoded_credentials = base64.b64encode(credentials.encode()).decode()
+# Credenciais informadas pela equipe para buscar grupos e listagens de conteúdo
+user_content = "49831679"
+pass_content = "23cf07f4"
+cred_content = f"{user_content}:{pass_content}"
+encoded_cred_content = base64.b64encode(cred_content.encode()).decode()
 
-headers = {
-    "Authorization": f"Basic {encoded_credentials}",
+headers_content = {
+    "Authorization": f"Basic {encoded_cred_content}",
+    "Accept": "application/json"
+}
+
+# Suas credenciais originais para o export de reservas
+username_res = "09af95bc"
+password_res = "3c4699d1"
+credentials_res = f"{username_res}:{password_res}"
+encoded_credentials_res = base64.b64encode(credentials_res.encode()).decode()
+
+headers_reservas = {
+    "Authorization": f"Basic {encoded_credentials_res}",
     "Accept": "application/json",
     "Content-Type": "application/json"
 }
+
+print("Buscando o grupo 'Governança Amanda' para filtrar os imóveis corretos...")
+
+# PASSO 1: Achar o grupo "Governança Amanda" paginando com skip de 20 em 20
+listing_ids_permitidos = []
+skip = 0
+encontrou_grupo = False
+
+while not encontrou_grupo:
+    url_groups = f"{base_url}/external/v1/content/groups?skip={skip}"
+    resp_groups = requests.get(url_groups, headers=headers_content)
+    
+    if resp_groups.status_code == 200:
+        grupos = resp_groups.json()
+        if not grupos: # Se vier lista vazia, acabou
+            break
+            
+        for g in grupos:
+            if g.get("internalName") == "Governança Amanda":
+                listing_ids_permitidos = g.get("listingIds", [])
+                encontrou_grupo = True
+                print(f"Grupo 'Governança Amanda' encontrado! Total de imóveis no grupo: {len(listing_ids_permitidos)}")
+                break
+        skip += 20
+    else:
+        print(f"Erro ao buscar grupos: {resp_groups.status_code}")
+        break
+
+if not listing_ids_permitidos:
+    print("Aviso: O grupo 'Governança Amanda' não foi encontrado ou está vazio. Prosseguindo sem filtro de grupo.")
 
 # 2. Janela Dinâmica Inteligente (60 dias para trás e 60 dias para frente)
 hoje = datetime.now().date()
@@ -50,7 +92,7 @@ response = None
 while tentativa < max_tentativas:
     tentativa += 1
     try:
-        response = requests.post(endpoint, headers=headers, json=payload, timeout=30)
+        response = requests.post(endpoint, headers=headers_reservas, json=payload, timeout=30)
         if response.status_code == 200:
             break
         elif response.status_code >= 500:
@@ -62,14 +104,27 @@ while tentativa < max_tentativas:
         print(f"Erro de conexão na tentativa {tentativa}: {e}. Tentando novamente em 15 segundos...")
         time.sleep(15)
 
-# Processamento após as tentativas
+# Processamento e Filtragem após as tentativas
 if response and response.status_code == 200:
     reservas = response.json()
-    print(f"Sucesso! {len(reservas)} reservas encontradas. Processando...")
+    print(f"Sucesso! {len(reservas)} reservas brutas encontradas. Aplicando filtro do grupo...")
     
     lista_processada = []
     
     for r in reservas:
+        # Identifica o ID do imóvel real da reserva conforme orientação da equipe
+        id_imovel = r.get("_idlisting")
+        
+        # Tratamento para isMaster (caso venha agrupado, pega o child)
+        if r.get("isMaster") == True:
+            childs = r.get("childs", [])
+            if childs:
+                id_imovel = childs[0].get("_idlisting")
+
+        # Se identificamos um filtro de grupo, descartamos o que estiver fora dele
+        if listing_ids_permitidos and id_imovel not in listing_ids_permitidos:
+            continue  # Pula esta reserva pois não pertence ao "Governança Amanda"
+
         check_in = r.get("checkInDate")
         check_out = r.get("checkOutDate")
         hospedes = r.get("guestTotalCount", 1)
@@ -107,9 +162,9 @@ if response and response.status_code == 200:
         df["Check-in"] = pd.to_datetime(df["Check-in"]).dt.strftime('%Y-%m-%d')
         df["Check-out"] = pd.to_datetime(df["Check-out"]).dt.strftime('%Y-%m-%d')
         df = df.sort_values(by="Check-in", ascending=True)
-        print("Dados processados com sucesso. Enviando para o Google Drive...")
+        print(f"Processamento concluído. {len(df)} reservas válidas após o filtro do grupo.")
     else:
-        print("Nenhuma reserva encontrada no período, mas a conexão ocorreu com sucesso.")
+        print("Nenhuma reserva encontrada para o grupo no período.")
         df = pd.DataFrame(columns=[
             "Check-in", "Check-out", "Unidade / Apto", "Hóspedes", 
             "Travesseiros", "Fronhas", "Jogos de Lençóis", "Cobertores", 
