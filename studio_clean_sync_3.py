@@ -117,29 +117,24 @@ if response and response.status_code == 200:
         print(reservas[0])
         print("---------------------------------------")
 
-    for r in reservas:
-        # Tenta pegar o ID do imóvel por diferentes nomes que a Stays costuma usar
-        id_imovel = r.get("_idlisting") or r.get("listingId") or r.get("idListing") or r.get("id_listing")
+for r in reservas:
+        # Pega o ID do imóvel dentro do dicionário 'listing' (ex: 'RK01I')
+        listing_info = r.get("listing", {})
+        id_imovel = listing_info.get("id")
         
+        # Caso alternativo caso venha direto em outro campo
+        if not id_imovel:
+            id_imovel = r.get("_idlisting") or r.get("listingId")
+
         # Tratamento para isMaster (caso venha agrupado, pega o child)
         if r.get("isMaster") == True:
             childs = r.get("childs", [])
             if childs:
-                id_imovel = childs[0].get("_idlisting") or childs[0].get("listingId") or childs[0].get("idListing")
+                id_imovel = childs[0].get("id") or childs[0].get("_idlisting")
 
         # Se identificamos um filtro de grupo, descarta o que estiver fora dele
         if listing_ids_permitidos and id_imovel not in listing_ids_permitidos:
-            continue  # Pula esta reserva
-        
-        # Tratamento para isMaster (caso venha agrupado, pega o child)
-        if r.get("isMaster") == True:
-            childs = r.get("childs", [])
-            if childs:
-                id_imovel = childs[0].get("_idlisting")
-
-        # Se identificamos um filtro de grupo, descarta o que estiver fora dele
-        if listing_ids_permitidos and id_imovel not in listing_ids_permitidos:
-            continue  # Pula esta reserva
+            continue  # Pula esta reserva pois não pertence ao "Governança Amanda"
 
         check_in = r.get("checkInDate")
         check_out = r.get("checkOutDate")
