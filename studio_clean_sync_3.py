@@ -5,7 +5,7 @@ import requests  # (ou a biblioteca que você usa para chamar a API da Stays)
 from datetime import datetime
 
 # ==========================================
-# BLOCO 1: SEU CÓDIGO DA STAYS.NET (COM FILTRO DO GRUPO "Governança Amanda")
+# BLOCO 1: SEU CÓDIGO DA STAYS.NET (COM FILTRO DO GRUPO E RETRY)
 # ==========================================
 import requests
 import base64
@@ -17,7 +17,7 @@ import time
 # 1. Configurações de Acesso Gerais e de Conteúdo
 base_url = "https://www.booksantos.com.br"
 
-# Credenciais informadas pela equipe para buscar grupos e listagens de conteúdo
+# Credenciais de Conteúdo para buscar grupos e listagens
 user_content = "49831679"
 pass_content = "23cf07f4"
 cred_content = f"{user_content}:{pass_content}"
@@ -28,7 +28,7 @@ headers_content = {
     "Accept": "application/json"
 }
 
-# Suas credenciais originais para o export de reservas
+# Credenciais para o export de reservas
 username_res = "09af95bc"
 password_res = "3c4699d1"
 credentials_res = f"{username_res}:{password_res}"
@@ -53,7 +53,7 @@ while not encontrou_grupo:
     
     if resp_groups.status_code == 200:
         grupos = resp_groups.json()
-        if not grupos: # Se vier lista vazia, acabou
+        if not grupos: 
             break
             
         for g in grupos:
@@ -69,12 +69,6 @@ while not encontrou_grupo:
 
 if not listing_ids_permitidos:
     print("Aviso: O grupo 'Governança Amanda' não foi encontrado ou está vazio. Prosseguindo sem filtro de grupo.")
-
-print(f"Total de IDs permitidos encontrados no grupo: {len(listing_ids_permitidos)}")
-if len(listing_ids_permitidos) > 0:
-    print(f"Exemplo de ID permitido: {listing_ids_permitidos[0]}")
-else:
-    print("ATENÇÃO: O grupo não retornou nenhum ID. O nome pode estar incorreto.")
 
 # 2. Janela Dinâmica Inteligente (60 dias para trás e 60 dias para frente)
 hoje = datetime.now().date()
@@ -118,7 +112,7 @@ if response and response.status_code == 200:
     lista_processada = []
     
     for r in reservas:
-        # Identifica o ID do imóvel real da reserva conforme orientação da equipe
+        # Identifica o ID do imóvel real da reserva
         id_imovel = r.get("_idlisting")
         
         # Tratamento para isMaster (caso venha agrupado, pega o child)
@@ -127,9 +121,9 @@ if response and response.status_code == 200:
             if childs:
                 id_imovel = childs[0].get("_idlisting")
 
-        # Se identificamos um filtro de grupo, descartamos o que estiver fora dele
+        # Se identificamos um filtro de grupo, descarta o que estiver fora dele
         if listing_ids_permitidos and id_imovel not in listing_ids_permitidos:
-            continue  # Pula esta reserva pois não pertence ao "Governança Amanda"
+            continue  # Pula esta reserva
 
         check_in = r.get("checkInDate")
         check_out = r.get("checkOutDate")
@@ -161,7 +155,7 @@ if response and response.status_code == 200:
             "Toalhas de Banho": toalhas_banho
         })
     
-    # Criando o DataFrame FORA do loop (com segurança)
+    # Criando o DataFrame FORA do loop com segurança
     df = pd.DataFrame(lista_processada)
     
     if not df.empty:
@@ -176,14 +170,11 @@ if response and response.status_code == 200:
             "Travesseiros", "Fronhas", "Jogos de Lençóis", "Cobertores", 
             "Panos de Prato", "Toalhas de Rosto", "Toalhas de Banho"
         ])
-
-print(f"Reservas brutas: {len(reservas)} | Reservas após o filtro do grupo: {len(lista_processada)}")
-
 else:
     status = response.status_code if response else "Desconhecido"
     text = response.text if response else "Sem resposta"
-    raise Exception(f"Erro ao buscar reservas na Stays após {max_tentativas} tentativas: {status} - {text}")
-    
+    raise Exception(f"Erro ao buscar reservas na Stays após {max_tentativas} tentativas: {status} - {text}")    
+
 # ==========================================
 # BLOCO 2: CONEXÃO COM O GOOGLE DRIVE (GSPREAD)
 # ==========================================
