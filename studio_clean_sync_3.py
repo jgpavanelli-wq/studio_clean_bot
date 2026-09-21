@@ -119,14 +119,9 @@ if response and response.status_code == 200:
             if childs:
                 id_imovel = childs[0].get("id") or childs[0].get("_idlisting")
 
-        # Se houver IDs no grupo, tentamos filtrar por eles. 
-        # MAS, se a lista filtrada zerar completamente por incompatibilidade de formato da API, 
-        # permitimos temporariamente os dados para a planilha não ir vazia para o cliente.
-        if listing_ids_permitidos and id_imovel not in listing_ids_permitidos:
-            # Se quiseres rigor total, mantemos o 'continue'. 
-            # Como o formato de ID da Stays de conteúdo e de reservas diverge, vamos flexibilizar 
-            # recolhendo tudo o que tem vínculo de listagem válida por enquanto:
-            pass 
+        # Ignora unidades de São Paulo que estão fora da gestão da Studio Clean
+        if nome_unidade.startswith("SP_"):
+            continue  # Pula esta reserva indesejada
 
         check_in = r.get("checkInDate")
         check_out = r.get("checkOutDate")
