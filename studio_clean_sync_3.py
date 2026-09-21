@@ -106,16 +106,13 @@ while tentativa < max_tentativas:
         print(f"Erro de conexão/timeout na tentativa {tentativa}: {e}. Tentando novamente em 15 segundos...")
         time.sleep(15)
 
-# Processamento e Filtragem com segurança absoluta contra erros
-if response and response.status_code == 200:
-    reservas = response.json()
-    print(f"Sucesso! {len(reservas)} reservas brutas encontradas. Aplicando filtro do grupo...")
-    
+    # Processamento e Filtragem com diagnóstico de formato dos IDs
     lista_processada = []
+    contador_diagnostico = 0
     
     for r in reservas:
         listing_info = r.get("listing", {})
-        id_imovel = listing_info.get("id")
+        id_imovel = listing_info.get("id") # Ex: 'RK01I'
         
         if not id_imovel:
             id_imovel = r.get("_idlisting") or r.get("listingId")
@@ -124,6 +121,13 @@ if response and response.status_code == 200:
             childs = r.get("childs", [])
             if childs:
                 id_imovel = childs[0].get("id") or childs[0].get("_idlisting")
+
+        # Imprime os 3 primeiros para vermos o formato exato dos dois lados
+        if contador_diagnostico < 3:
+            print(f"[FORMATO ID] ID extraído da reserva: '{id_imovel}'")
+            if listing_ids_permitidos:
+                print(f"[FORMATO ID] Exemplo de ID na lista do grupo: '{listing_ids_permitidos[0]}'")
+            contador_diagnostico += 1
 
         # Se identificamos um filtro de grupo, descarta o que estiver fora dele
         if listing_ids_permitidos and id_imovel not in listing_ids_permitidos:
