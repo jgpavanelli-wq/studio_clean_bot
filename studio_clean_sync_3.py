@@ -5,7 +5,7 @@ import requests  # (ou a biblioteca que você usa para chamar a API da Stays)
 from datetime import datetime
 
 # ==========================================
-# BLOCO 1: SEU CÓDIGO DA STAYS.NET (COM FILTRO DO GRUPO E RETRY)
+# BLOCO 1: SEU CÓDIGO DA STAYS.NET (COM TIMEOUT AMPLIADO E RETRY)
 # ==========================================
 import requests
 import base64
@@ -49,7 +49,7 @@ encontrou_grupo = False
 
 while not encontrou_grupo:
     url_groups = f"{base_url}/external/v1/content/groups?skip={skip}"
-    resp_groups = requests.get(url_groups, headers=headers_content)
+    resp_groups = requests.get(url_groups, headers=headers_content, timeout=30)
     
     if resp_groups.status_code == 200:
         grupos = resp_groups.json()
@@ -84,7 +84,7 @@ payload = {
 
 print(f"Buscando reservas de {payload['from']} até {payload['to']}...")
 
-# Mecanismo de Tentativa Automática (Retry) para erros 500 da Stays
+# Mecanismo de Tentativa Automática (Retry) com Timeout ampliado para 90 segundos
 max_tentativas = 3
 tentativa = 0
 response = None
@@ -92,21 +92,26 @@ response = None
 while tentativa < max_tentativas:
     tentativa += 1
     try:
-        response = requests.post(endpoint, headers=headers_reservas, json=payload, timeout=30)
+        # Timeout aumentado para 90 segundos para aguentar o volume de exportação da Stays
+        response = requests.post(endpoint, headers=headers_reservas, json=payload, timeout=90)
         if response.status_code == 200:
             break
         elif response.status_code >= 500:
             print(f"Servidor da Stays instável (Erro {response.status_code}). Tentativa {tentativa} de {max_tentativas}. Aguardando 15 segundos...")
             time.sleep(15)
         else:
+            print(f"Erro retornado pela Stays: {response.status_code} - {response.text}")
             break
     except requests.exceptions.RequestException as e:
-        print(f"Erro de conexão na tentativa {tentativa}: {e}. Tentando novamente em 15 segundos...")
+        print(f"Erro de conexão/timeout na tentativa {tentativa}: {e}. Tentando novamente em 15 segundos...")
         time.sleep(15)
 
-    # Processamento e Filtragem com diagnóstico de IDs
+# Processamento e Filtragem com segurança absoluta contra erros
+if response and response.status_code == 200:
+    reservas = response.json()
+    print(f"Sucesso! {len(reservas)} reservas brutas encontradas. Aplicando filtro do grupo...")
+    
     lista_processada = []
-    contador_teste = 0
     
     for r in reservas:
         listing_info = r.get("listing", {})
@@ -119,13 +124,6 @@ while tentativa < max_tentativas:
             childs = r.get("childs", [])
             if childs:
                 id_imovel = childs[0].get("id") or childs[0].get("_idlisting")
-
-        # Imprime os primeiros 3 cruzamentos para diagnosticarmos o formato
-        if contador_teste < 3:
-            print(f"[DIAGNÓSTICO ID] ID da Reserva: {id_imovel} | Está na lista do grupo? {id_imovel in listing_ids_permitidos}")
-            if len(listing_ids_permitidos) > 0:
-                print(f"[DIAGNÓSTICO ID] Exemplo de ID que está no grupo: {listing_ids_permitidos[0]}")
-            contador_teste += 1
 
         # Se identificamos um filtro de grupo, descarta o que estiver fora dele
         if listing_ids_permitidos and id_imovel not in listing_ids_permitidos:
@@ -175,7 +173,7 @@ while tentativa < max_tentativas:
 else:
     status = response.status_code if response else "Desconhecido"
     text = response.text if response else "Sem resposta"
-    raise Exception(f"Erro ao buscar reservas na Stays após {max_tentativas} tentativas: {status} - {text}") 
+    raise Exception(f"Erro ao buscar reservas na Stays após {max_tentativas} tentativas: {status} - {text}")
 
 # ==========================================
 # BLOCO 2: CONEXÃO COM O GOOGLE DRIVE (GSPREAD)
