@@ -139,27 +139,34 @@ def criar_historico_google_sheets(df):
     creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
     client = gspread.authorize(creds)
     
-    # Cria o serviço oficial da API do Google Drive
     drive_service = build('drive', 'v3', credentials=creds)
     
     data_atual = datetime.now().strftime("%Y-%m-%d_%H-%M")
     nome_arquivo_semanal = f"Checklist_Kobo_Historico_{data_atual}"
     PASTA_DESTINO_ID = "1_fw1PjAjsSnZ_yLE6IHm4DRHYlDk7kmu"
     
+    # SEU E-MAIL PESSOAL PARA GARANTIR ACESSO DIRETO:
+    MEU_EMAIL_PESSOAL = "seu-email-pessoal@gmail.com"
+    
     try:
-        # Metadados para criar o Google Sheet diretamente dentro da pasta de destino
         file_metadata = {
             'name': nome_arquivo_semanal,
             'mimeType': 'application/vnd.google-apps.spreadsheet',
             'parents': [PASTA_DESTINO_ID]
         }
         
-        # Cria o arquivo fisicamente na pasta através da API oficial do Drive
         file = drive_service.files().create(body=file_metadata, fields='id').execute()
         file_id = file.get('id')
-        print(f"Arquivo criado com ID oficial: {file_id}")
+        print(f"-> SUCESSO: Arquivo criado fisicamente. ID: {file_id}")
         
-        # Abre a planilha pelo ID recém-criado usando o gspread para preencher os dados
+        # Concede permissão explícita para o seu e-mail pessoal ver/editar o arquivo criado
+        drive_service.permissions().create(
+            fileId=file_id,
+            body={'role': 'writer', 'type': 'user', 'emailAddress': MEU_EMAIL_PESSOAL},
+            sendNotificationEmail=False
+        ).execute()
+        print(f"-> SUCESSO: Permissão concedida para {MEU_EMAIL_PESSOAL}")
+        
         spreadsheet = client.open_by_key(file_id)
         sheet = spreadsheet.sheet1
         
@@ -169,7 +176,7 @@ def criar_historico_google_sheets(df):
 
     data_to_upload = [df.columns.tolist()] + df.values.tolist()
     sheet.update("A1", data_to_upload)
-    print(f"Sucesso absoluto! Histórico semanal gerado na pasta: '{nome_arquivo_semanal}'")
+    print(f"Sucesso absoluto! Histórico semanal gerado e compartilhado: '{nome_arquivo_semanal}'")
 
 if __name__ == "__main__":
     dados_brutos = extrair_dados_kobo()
