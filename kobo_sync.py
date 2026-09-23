@@ -149,12 +149,11 @@ def criar_historico_google_sheets(df):
         # Localiza o template original
         template_spreadsheet = client.open(nome_template)
         
-        # Copia o template informando o folder_id para o arquivo nascer direto no seu Drive
+        # Copia o template informando o folder_id para o arquivo nascer direto na sua pasta
         novo_arquivo = client.copy(template_spreadsheet.id, title=nome_arquivo_semanal, folder_id=PASTA_DESTINO_ID)
         
-        # Abre a cópia recém-criada
-        spreadsheet = client.open(nome_arquivo_semanal)
-        sheet = spreadsheet.sheet1
+        # Usa DIRETAMENTE a referência do arquivo copiado (sem precisar dar client.open de novo)
+        sheet = novo_arquivo.sheet1
         sheet.clear()
         
         print(f"Histórico semanal criado com sucesso dentro da sua pasta: '{nome_arquivo_semanal}'")
