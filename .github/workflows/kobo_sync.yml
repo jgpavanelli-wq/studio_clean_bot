@@ -19,7 +19,7 @@ jobs:
 
       - name: Instalar Dependências
         run: |
-          pip install requests pandas gspread google-auth
+          pip install requests pandas gspread google-auth google-api-python-client
 
       - name: Criar Arquivo de Credenciais do Google a partir do Secret
         env:
