@@ -22,8 +22,10 @@ jobs:
           pip install requests pandas gspread google-auth
 
       - name: Criar Arquivo de Credenciais do Google a partir do Secret
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
         run: |
-          echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > credentials.json
+          python -c 'import os; open("credentials.json", "w").write(os.environ["GOOGLE_CREDENTIALS"])'
 
       - name: Executar Script de Sincronização
         run: |
