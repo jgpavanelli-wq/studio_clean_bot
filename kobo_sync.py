@@ -129,6 +129,8 @@ def processar_registros(dados):
 
     return pd.DataFrame(lista_processada)
 
+from googleapiclient.discovery import build
+
 def criar_historico_google_sheets(df):
     if df.empty:
         print("Nenhum dado para enviar.")
@@ -137,40 +139,37 @@ def criar_historico_google_sheets(df):
     creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
     client = gspread.authorize(creds)
     
+    # Cria o serviço oficial da API do Google Drive
+    drive_service = build('drive', 'v3', credentials=creds)
+    
     data_atual = datetime.now().strftime("%Y-%m-%d_%H-%M")
     nome_arquivo_semanal = f"Checklist_Kobo_Historico_{data_atual}"
     PASTA_DESTINO_ID = "1_fw1PjAjsSnZ_yLE6IHm4DRHYlDk7kmu"
     
     try:
-        # Cria a planilha nova especificando a pasta de destino de forma nativa na API do Drive
-        metadata = {
+        # Metadados para criar o Google Sheet diretamente dentro da pasta de destino
+        file_metadata = {
             'name': nome_arquivo_semanal,
-            'parents': [PASTA_DESTINO_ID],
-            'mimeType': 'application/vnd.google-apps.spreadsheet'
+            'mimeType': 'application/vnd.google-apps.spreadsheet',
+            'parents': [PASTA_DESTINO_ID]
         }
         
-        # Faz a requisição direta para criar o arquivo dentro da sua pasta compartilhada
-        response = client.http_client.request(
-            'POST',
-            'https://www.googleapis.com/drive/v3/files',
-            json=metadata
-        )
+        # Cria o arquivo fisicamente na pasta através da API oficial do Drive
+        file = drive_service.files().create(body=file_metadata, fields='id').execute()
+        file_id = file.get('id')
+        print(f"Arquivo criado com ID oficial: {file_id}")
         
-        file_data = response.json()
-        file_id = file_data.get('id')
-        
-        # Abre o arquivo recém-criado pelo ID exato e pega a primeira aba
+        # Abre a planilha pelo ID recém-criado usando o gspread para preencher os dados
         spreadsheet = client.open_by_key(file_id)
         sheet = spreadsheet.sheet1
         
-        print(f"Histórico semanal criado fisicamente na sua pasta: '{nome_arquivo_semanal}'")
     except Exception as e:
-        print(f"Erro detalhado ao processar no Google Drive: {e}")
+        print(f"Erro crítico ao interagir com a API do Google: {e}")
         return
 
     data_to_upload = [df.columns.tolist()] + df.values.tolist()
     sheet.update("A1", data_to_upload)
-    print("Sucesso absoluto! Dados gravados na nova planilha.")
+    print(f"Sucesso absoluto! Histórico semanal gerado na pasta: '{nome_arquivo_semanal}'")
 
 if __name__ == "__main__":
     dados_brutos = extrair_dados_kobo()
