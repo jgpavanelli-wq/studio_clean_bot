@@ -107,6 +107,7 @@ def processar_registros(dados):
         obs_geral = reg.get("Vistoria / Ocorrências / Observações", "")
         ocorrencias_finais = f"{obs_vistoria} {obs_geral}".strip()
 
+        # Captura dos novos campos de observações, fotos e vídeos mapeados
         linha = {
             "Data": data_servico,
             "Condomínio": condominio,
@@ -123,7 +124,52 @@ def processar_registros(dados):
             "Tempo de Trabalho": tempo_trabalho,
             "Conclusão (%)": f"{percentual_conclusao}%",
             "Ocorrências / Obs": ocorrencias_finais,
-            "Enviado por": enviar_por
+            "Enviado por": enviar_por,
+            
+            # Novos campos mapeados (Observações e Mídias)
+            "Banheiro 1 - Foto 1": reg.get("b1_foto1", ""),
+            "Banheiro 1 - Foto 2": reg.get("b1_foto2", ""),
+            "Banheiro 1 - Obs": reg.get("b1_obs", ""),
+            "Banheiro 2 - Foto 1": reg.get("b2_foto1", ""),
+            "Banheiro 2 - Foto 2": reg.get("b2_foto2", ""),
+            "Banheiro 2 - Obs": reg.get("b2_obs", ""),
+            "Banheiro 3 - Foto 1": reg.get("b3_foto1", ""),
+            "Banheiro 3 - Foto 2": reg.get("b3_foto2", ""),
+            "Banheiro 3 - Obs": reg.get("b3_obs", ""),
+            "Banheiro 4 - Foto 1": reg.get("b4_foto1", ""),
+            "Banheiro 4 - Foto 2": reg.get("b4_foto2", ""),
+            "Banheiro 4 - Obs": reg.get("b4_obs", ""),
+            "Sala/Varanda - Foto 1": reg.get("sala_foto1", ""),
+            "Sala/Varanda - Foto 2": reg.get("sala_foto2", ""),
+            "Sala/Varanda - Obs": reg.get("sala_obs", ""),
+            "Quarto 1 - Foto 1": reg.get("q1_foto1", ""),
+            "Quarto 1 - Foto 2": reg.get("q1_foto2", ""),
+            "Quarto 1 - Obs": reg.get("q1_obs", ""),
+            "Quarto 2 - Foto 1": reg.get("q2_foto1", ""),
+            "Quarto 2 - Foto 2": reg.get("q2_foto2", ""),
+            "Quarto 2 - Obs": reg.get("q2_obs", ""),
+            "Quarto 3 - Foto 1": reg.get("q3_foto1", ""),
+            "Quarto 3 - Foto 2": reg.get("q3_foto2", ""),
+            "Quarto 3 - Obs": reg.get("q3_obs", ""),
+            "Cozinha - Foto 1": reg.get("coz_foto1", ""),
+            "Cozinha - Foto 2": reg.get("coz_foto2", ""),
+            "Cozinha - Obs": reg.get("coz_obs", ""),
+            "Jacuzzi - Foto 1": reg.get("jac_foto1", ""),
+            "Jacuzzi - Foto 2": reg.get("jac_foto2", ""),
+            "Jacuzzi - Obs": reg.get("jac_obs", ""),
+            "Registro Geral": reg.get("grp_geral", ""),
+            "Danos Observados": reg.get("obs_danos", ""),
+            "Foto Final 1": reg.get("foto_final1", ""),
+            "Foto Final 2": reg.get("foto_final2", ""),
+            "Foto Final 3": reg.get("foto_final3", ""),
+            "Vídeo Final 1": reg.get("video_final1", ""),
+            "Vídeo Final 2": reg.get("video_final2", ""),
+            "Foto Vistoria 1": reg.get("vis_foto1", ""),
+            "Foto Vistoria 2": reg.get("vis_foto2", ""),
+            "Foto Vistoria 3": reg.get("vis_foto3", ""),
+            "Foto Vistoria 4": reg.get("vis_foto4", ""),
+            "Vídeo Vistoria 1": reg.get("vis_video1", ""),
+            "Vídeo Vistoria 2": reg.get("vis_video2", "")
         }
         lista_processada.append(linha)
 
