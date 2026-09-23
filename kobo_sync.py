@@ -142,6 +142,9 @@ def criar_historico_google_sheets(df):
     nome_template = "Template_Checklist_Kobo"
     data_atual = datetime.now().strftime("%Y-%m-%d_%H-%M")
     nome_arquivo_semanal = f"Checklist_Kobo_Historico_{data_atual}"
+
+    # INSIRA SEU E-MAIL PESSOAL DO GOOGLE DRIVE AQUI ABAIXO:
+    MEU_EMAIL_PESSOAL = "jgpavanelli@gmail.com"
     
     try:
         # Localiza a planilha template original no seu Drive
