@@ -138,15 +138,33 @@ def criar_historico_google_sheets(df):
     creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
     client = gspread.authorize(creds)
     
+    # Nome do template no seu Drive e nome dinâmico do novo arquivo semanal
+    nome_template = "Template_Checklist_Kobo"
     data_atual = datetime.now().strftime("%Y-%m-%d_%H-%M")
     nome_arquivo_semanal = f"Checklist_Kobo_Historico_{data_atual}"
     
-    spreadsheet = client.create(nome_arquivo_semanal)
-    sheet = spreadsheet.sheet1
-    
+    try:
+        # Localiza a planilha template original no seu Drive
+        template_spreadsheet = client.open(nome_template)
+        
+        # Copia o template gerando um novo arquivo exclusivo para a semana (usando o seu espaço no Drive)
+        novo_arquivo = client.copy(template_spreadsheet.id, title=nome_arquivo_semanal)
+        
+        # Abre o arquivo recém-criado para preencher os dados
+        spreadsheet = client.open(nome_arquivo_semanal)
+        sheet = spreadsheet.sheet1
+        
+        # Limpa eventuais dados antigos que estivessem no template
+        sheet.clear()
+        
+        print(f"Novo histórico semanal criado com sucesso no Google Drive: '{nome_arquivo_semanal}'")
+    except Exception as e:
+        print(f"Erro ao copiar o template ou criar a planilha no Drive: {e}")
+        return
+
     data_to_upload = [df.columns.tolist()] + df.values.tolist()
     sheet.update("A1", data_to_upload)
-    print(f"Histórico semanal gerado com sucesso no Google Drive: '{nome_arquivo_semanal}'")
+    print("Sucesso absoluto! Dados atualizados no novo arquivo de histórico.")
 
 if __name__ == "__main__":
     dados_brutos = extrair_dados_kobo()
