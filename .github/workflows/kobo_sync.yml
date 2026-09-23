@@ -1,0 +1,30 @@
+name: Kobo Sync Studio Clean
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Toda segunda-feira às 06:00 UTC
+  workflow_dispatch:      # Permite rodar manualmente a qualquer momento pelo botão do GitHub
+
+jobs:
+  run-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Instalar Dependências
+        run: |
+          pip install requests pandas gspread google-auth
+
+      - name: Criar Arquivo de Credenciais do Google a partir do Secret
+        run: |
+          echo "${{ secrets.GOOGLE_CREDENTIALS_JSON }}" > credentials.json
+
+      - name: Executar Script de Sincronização
+        run: |
+          python kobo_sync.py
