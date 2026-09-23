@@ -139,29 +139,38 @@ def criar_historico_google_sheets(df):
     
     data_atual = datetime.now().strftime("%Y-%m-%d_%H-%M")
     nome_arquivo_semanal = f"Checklist_Kobo_Historico_{data_atual}"
-    
-    # IDs protegidos e direcionados
-    TEMPLATE_ID = "1qxtMHo9_h1T1-2C6BdMKxmarQbH33ikPyCOKHhYawRc"
     PASTA_DESTINO_ID = "1_fw1PjAjsSnZ_yLE6IHm4DRHYlDk7kmu"
     
     try:
-        # Abre o template protegido diretamente pelo ID
-        template_spreadsheet = client.open_by_key(TEMPLATE_ID)
+        # Cria a planilha nova especificando a pasta de destino de forma nativa na API do Drive
+        metadata = {
+            'name': nome_arquivo_semanal,
+            'parents': [PASTA_DESTINO_ID],
+            'mimeType': 'application/vnd.google-apps.spreadsheet'
+        }
         
-        # Copia o template gerando um novo arquivo exclusivo direto na pasta de histórico
-        novo_arquivo = client.copy(template_spreadsheet.id, title=nome_arquivo_semanal, folder_id=PASTA_DESTINO_ID)
+        # Faz a requisição direta para criar o arquivo dentro da sua pasta compartilhada
+        response = client.http_client.request(
+            'POST',
+            'https://www.googleapis.com/drive/v3/files',
+            json=metadata
+        )
         
-        sheet = novo_arquivo.sheet1
-        sheet.clear()
+        file_data = response.json()
+        file_id = file_data.get('id')
         
-        print(f"Histórico semanal criado com sucesso na pasta de destino: '{nome_arquivo_semanal}'")
+        # Abre o arquivo recém-criado pelo ID exato e pega a primeira aba
+        spreadsheet = client.open_by_key(file_id)
+        sheet = spreadsheet.sheet1
+        
+        print(f"Histórico semanal criado fisicamente na sua pasta: '{nome_arquivo_semanal}'")
     except Exception as e:
         print(f"Erro detalhado ao processar no Google Drive: {e}")
         return
 
     data_to_upload = [df.columns.tolist()] + df.values.tolist()
     sheet.update("A1", data_to_upload)
-    print("Sucesso absoluto! Dados atualizados no novo arquivo.")
+    print("Sucesso absoluto! Dados gravados na nova planilha.")
 
 if __name__ == "__main__":
     dados_brutos = extrair_dados_kobo()
