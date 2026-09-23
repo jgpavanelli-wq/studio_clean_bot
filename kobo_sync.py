@@ -140,21 +140,27 @@ def criar_historico_google_sheets(df):
     
     data_atual = datetime.now().strftime("%Y-%m-%d_%H-%M")
     nome_arquivo_semanal = f"Checklist_Kobo_Historico_{data_atual}"
-    
-    # O ID da sua pasta 'Historico_Kobo'
     PASTA_DESTINO_ID = "1_fw1PjAjsSnZ_yLE6IHm4DRHYlDk7kmu"
     
     try:
-        # Cria a planilha nova informando o folder_id para que ela nasça dentro da sua pasta
-        # Nota: O gspread permite passar parâmetros de pasta através da API do Drive subjacente
-        file_metadata = {
-            'title': nome_arquivo_semanal,
-            'parents': [{'id': PASTA_DESTINO_ID}],
+        # Cria a planilha diretamente na pasta do seu Drive utilizando os metadados corretos do Google Drive v3
+        metadata = {
+            'name': nome_arquivo_semanal,
+            'parents': [PASTA_DESTINO_ID],
             'mimeType': 'application/vnd.google-apps.spreadsheet'
         }
         
-        # Cria o arquivo diretamente na pasta do seu Drive via API do Google Drive
-        spreadsheet = client.create(nome_arquivo_semanal, folder_id=PASTA_DESTINO_ID)
+        # Cria o arquivo via cliente do Google Drive integrado ao gspread
+        file_info = client.import_session.request(
+            'POST',
+            'https://www.googleapis.com/drive/v3/files',
+            json=metadata
+        ).json()
+        
+        spreadsheet_id = file_info.get('id')
+        
+        # Abre a planilha recém-criada pelo ID exato
+        spreadsheet = client.open_by_key(spreadsheet_id)
         sheet = spreadsheet.sheet1
         
         print(f"Histórico semanal criado com sucesso dentro da sua pasta: '{nome_arquivo_semanal}'")
