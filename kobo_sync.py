@@ -143,29 +143,32 @@ def criar_historico_google_sheets(df):
     PASTA_DESTINO_ID = "1_fw1PjAjsSnZ_yLE6IHm4DRHYlDk7kmu"
     
     try:
-        # Cria a planilha diretamente na pasta do seu Drive utilizando os metadados corretos do Google Drive v3
-        metadata = {
-            'name': nome_arquivo_semanal,
-            'parents': [PASTA_DESTINO_ID],
-            'mimeType': 'application/vnd.google-apps.spreadsheet'
-        }
-        
-        # Cria o arquivo via cliente do Google Drive integrado ao gspread
-        file_info = client.import_session.request(
-            'POST',
-            'https://www.googleapis.com/drive/v3/files',
-            json=metadata
-        ).json()
-        
-        spreadsheet_id = file_info.get('id')
-        
-        # Abre a planilha recém-criada pelo ID exato
-        spreadsheet = client.open_by_key(spreadsheet_id)
+        # 1. Cria a planilha nova (o gspread cria na conta do robô)
+        spreadsheet = client.create(nome_arquivo_semanal)
         sheet = spreadsheet.sheet1
         
-        print(f"Histórico semanal criado com sucesso dentro da sua pasta: '{nome_arquivo_semanal}'")
+        # 2. Move o arquivo recém-criado para dentro da sua pasta compartilhada 'Historico_Kobo'
+        file_id = spreadsheet.id
+        
+        # Obtém o cliente do Drive para gerenciar as pastas
+        drive_service = client.list_spreadsheet_files() # apenas para garantir sessão ativa, ou usamos o cliente de drive interno
+        
+        # Chamada limpa via gspread para mover o arquivo para a pasta de destino
+        # Buscamos a pasta e o arquivo para alterar os 'parents'
+        file_obj = client.open_by_key(file_id)
+        
+        # Como mover via API do Drive no gspread:
+        # Adicionamos a pasta de destino e removemos da raiz
+        body = {'addParents': PASTA_DESTINO_ID}
+        client.import_session.request(
+            'PATCH',
+            f'https://www.googleapis.com/drive/v3/files/{file_id}',
+            params=body
+        )
+        
+        print(f"Histórico semanal criado e movido com sucesso para a pasta: '{nome_arquivo_semanal}'")
     except Exception as e:
-        print(f"Erro ao criar histórico na pasta: {e}")
+        print(f"Erro ao criar ou mover histórico para a pasta: {e}")
         return
 
     data_to_upload = [df.columns.tolist()] + df.values.tolist()
