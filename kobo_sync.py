@@ -138,36 +138,31 @@ def criar_historico_google_sheets(df):
     creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
     client = gspread.authorize(creds)
     
-    # Nome do template no seu Drive e nome dinâmico do novo arquivo semanal
     nome_template = "Template_Checklist_Kobo"
     data_atual = datetime.now().strftime("%Y-%m-%d_%H-%M")
     nome_arquivo_semanal = f"Checklist_Kobo_Historico_{data_atual}"
-
-    # INSIRA SEU E-MAIL PESSOAL DO GOOGLE DRIVE AQUI ABAIXO:
-    MEU_EMAIL_PESSOAL = "jgpavanelli@gmail.com"
+    
+    # COLE AQUI O ID DA SUA NOVA PASTA DO GOOGLE DRIVE:
+    PASTA_DESTINO_ID = "1_fw1PjAjsSnZ_yLE6IHm4DRHYlDk7kmu"
     
     try:
-        # Localiza a planilha template original no seu Drive
+        # Localiza o template e cria uma cópia diretamente dentro da sua pasta compartilhada
         template_spreadsheet = client.open(nome_template)
         
-        # Copia o template gerando um novo arquivo exclusivo para a semana (usando o seu espaço no Drive)
-        novo_arquivo = client.copy(template_spreadsheet.id, title=nome_arquivo_semanal)
+        # Copia informando o ID da pasta de destino para o arquivo nascer no seu Drive
+        novo_arquivo = client.copy(template_spreadsheet.id, title=nome_arquivo_semanal, folder_id=PASTA_DESTINO_ID)
         
-        # Abre o arquivo recém-criado para preencher os dados
-        spreadsheet = client.open(nome_arquivo_semanal)
-        sheet = spreadsheet.sheet1
-        
-        # Limpa eventuais dados antigos que estivessem no template
+        sheet = novo_arquivo.sheet1
         sheet.clear()
         
-        print(f"Novo histórico semanal criado com sucesso no Google Drive: '{nome_arquivo_semanal}'")
+        print(f"Histórico semanal criado diretamente na sua pasta: '{nome_arquivo_semanal}'")
     except Exception as e:
-        print(f"Erro ao copiar o template ou criar a planilha no Drive: {e}")
+        print(f"Erro ao criar histórico na pasta: {e}")
         return
 
     data_to_upload = [df.columns.tolist()] + df.values.tolist()
     sheet.update("A1", data_to_upload)
-    print("Sucesso absoluto! Dados atualizados no novo arquivo de histórico.")
+    print("Sucesso absoluto! Dados atualizados.")
 
 if __name__ == "__main__":
     dados_brutos = extrair_dados_kobo()
