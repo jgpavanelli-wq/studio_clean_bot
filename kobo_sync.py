@@ -5,7 +5,7 @@ from datetime import datetime
 import gspread
 from google.oauth2.service_account import Credentials
 
-# 1. Configurações de Acesso via Variáveis de Ambiente do GitHub (ou diretas)
+# 1. Configurações de Acesso
 KOBO_URL = "https://kf.kobotoolbox.org"
 ASSET_UID = "aoXMqam2RfsKFvZVPkQdn6"
 TOKEN = "a21c8e2faa2199f313a9bbdc231f405078fbf2b6"
@@ -14,7 +14,6 @@ HEADERS = {
     "Authorization": f"Token {TOKEN}"
 }
 
-# O GitHub vai ler o arquivo JSON que colocaremos nos "Secrets"
 CREDENTIALS_FILE = "credentials.json"
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -140,35 +139,24 @@ def criar_historico_google_sheets(df):
     
     data_atual = datetime.now().strftime("%Y-%m-%d_%H-%M")
     nome_arquivo_semanal = f"Checklist_Kobo_Historico_{data_atual}"
+    
+    # IDs protegidos e direcionados
+    TEMPLATE_ID = "1qxtMHo9_h1T1-2C6BdMKxmarQbH33ikPyCOKHhYawRc"
     PASTA_DESTINO_ID = "1_fw1PjAjsSnZ_yLE6IHm4DRHYlDk7kmu"
     
     try:
-        # 1. Cria a planilha nova (o gspread cria na conta do robô)
-        spreadsheet = client.create(nome_arquivo_semanal)
-        sheet = spreadsheet.sheet1
+        # Abre o template protegido diretamente pelo ID
+        template_spreadsheet = client.open_by_key(TEMPLATE_ID)
         
-        # 2. Move o arquivo recém-criado para dentro da sua pasta compartilhada 'Historico_Kobo'
-        file_id = spreadsheet.id
+        # Copia o template gerando um novo arquivo exclusivo direto na pasta de histórico
+        novo_arquivo = client.copy(template_spreadsheet.id, title=nome_arquivo_semanal, folder_id=PASTA_DESTINO_ID)
         
-        # Obtém o cliente do Drive para gerenciar as pastas
-        drive_service = client.list_spreadsheet_files() # apenas para garantir sessão ativa, ou usamos o cliente de drive interno
+        sheet = novo_arquivo.sheet1
+        sheet.clear()
         
-        # Chamada limpa via gspread para mover o arquivo para a pasta de destino
-        # Buscamos a pasta e o arquivo para alterar os 'parents'
-        file_obj = client.open_by_key(file_id)
-        
-        # Como mover via API do Drive no gspread:
-        # Adicionamos a pasta de destino e removemos da raiz
-        body = {'addParents': PASTA_DESTINO_ID}
-        client.import_session.request(
-            'PATCH',
-            f'https://www.googleapis.com/drive/v3/files/{file_id}',
-            params=body
-        )
-        
-        print(f"Histórico semanal criado e movido com sucesso para a pasta: '{nome_arquivo_semanal}'")
+        print(f"Histórico semanal criado com sucesso na pasta de destino: '{nome_arquivo_semanal}'")
     except Exception as e:
-        print(f"Erro ao criar ou mover histórico para a pasta: {e}")
+        print(f"Erro detalhado ao processar no Google Drive: {e}")
         return
 
     data_to_upload = [df.columns.tolist()] + df.values.tolist()
