@@ -129,9 +129,7 @@ def processar_registros(dados):
 
     return pd.DataFrame(lista_processada)
 
-from googleapiclient.discovery import build
-
-def criar_historico_google_sheets(df):
+def atualizar_planilha_unica(df):
     if df.empty:
         print("Nenhum dado para enviar.")
         return
@@ -139,47 +137,28 @@ def criar_historico_google_sheets(df):
     creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
     client = gspread.authorize(creds)
     
-    drive_service = build('drive', 'v3', credentials=creds)
-    
-    data_atual = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    nome_arquivo_semanal = f"Checklist_Kobo_Historico_{data_atual}"
-    PASTA_DESTINO_ID = "1_fw1PjAjsSnZ_yLE6IHm4DRHYlDk7kmu"
-    
-    # SEU E-MAIL PESSOAL PARA GARANTIR ACESSO DIRETO:
-    MEU_EMAIL_PESSOAL = "jgpavanelli@gmail.com"
+    # Nome da planilha única que fica fixa no seu Google Drive (já criada e compartilhada com o robô)
+    nome_planilha = "Historico_Checklist_Kobo"
     
     try:
-        file_metadata = {
-            'name': nome_arquivo_semanal,
-            'mimeType': 'application/vnd.google-apps.spreadsheet',
-            'parents': [PASTA_DESTINO_ID]
-        }
-        
-        file = drive_service.files().create(body=file_metadata, fields='id').execute()
-        file_id = file.get('id')
-        print(f"-> SUCESSO: Arquivo criado fisicamente. ID: {file_id}")
-        
-        # Concede permissão explícita para o seu e-mail pessoal ver/editar o arquivo criado
-        drive_service.permissions().create(
-            fileId=file_id,
-            body={'role': 'writer', 'type': 'user', 'emailAddress': MEU_EMAIL_PESSOAL},
-            sendNotificationEmail=False
-        ).execute()
-        print(f"-> SUCESSO: Permissão concedida para {MEU_EMAIL_PESSOAL}")
-        
-        spreadsheet = client.open_by_key(file_id)
+        # Abre diretamente a planilha existente no seu Drive
+        spreadsheet = client.open(nome_planilha)
         sheet = spreadsheet.sheet1
         
+        # Limpa os dados antigos para atualizar com a extração mais fresca
+        sheet.clear()
+        print(f"Planilha fixa '{nome_planilha}' aberta e limpa com sucesso.")
     except Exception as e:
-        print(f"Erro crítico ao interagir com a API do Google: {e}")
+        print(f"Erro ao abrir a planilha fixa no Drive. Verifique se o nome está exato e compartilhada: {e}")
         return
 
+    # Prepara os dados (cabeçalho + linhas)
     data_to_upload = [df.columns.tolist()] + df.values.tolist()
     sheet.update("A1", data_to_upload)
-    print(f"Sucesso absoluto! Histórico semanal gerado e compartilhado: '{nome_arquivo_semanal}'")
+    print("Sucesso absoluto! Planilha única atualizada com os dados mais recentes do Kobo.")
 
 if __name__ == "__main__":
     dados_brutos = extrair_dados_kobo()
     if dados_brutos:
         df_final = processar_registros(dados_brutos)
-        criar_historico_google_sheets(df_final)
+        atualizar_planilha_unica(df_final)
