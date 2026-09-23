@@ -146,7 +146,7 @@ def criar_historico_google_sheets(df):
     PASTA_DESTINO_ID = "1_fw1PjAjsSnZ_yLE6IHm4DRHYlDk7kmu"
     
     # SEU E-MAIL PESSOAL PARA GARANTIR ACESSO DIRETO:
-    MEU_EMAIL_PESSOAL = "seu-email-pessoal@gmail.com"
+    MEU_EMAIL_PESSOAL = "jgpavanelli@gmail.com"
     
     try:
         file_metadata = {
