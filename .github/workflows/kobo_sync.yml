@@ -2,7 +2,7 @@ name: Kobo Sync Studio Clean
 
 on:
   schedule:
-    - cron: '0 6 * * 1' # Toda segunda-feira às 06:00 UTC
+    - cron: '0 23 * * 0' # Toda segunda-feira às 06:00 UTC
   workflow_dispatch:      # Permite rodar manualmente a qualquer momento pelo botão do GitHub
 
 jobs:
