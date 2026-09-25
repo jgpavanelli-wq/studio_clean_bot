@@ -190,6 +190,9 @@ def processar_registros_e_midias(dados, drive_service):
             if chave in reg:
                 total_itens += 1
                 valor = reg.get(chave)
+                # --- LINHA DE DIAGNÓSTICO TEMPORÁRIA ---
+                print(f"DEBUG_VALOR - Chave: {chave} | Valor retornado pelo Kobo: '{valor}' (Tipo: {type(valor)})")
+                # ----------------------------------------
                 if valor in ["yes", "ok", "1", True]:
                     itens_ok += 1
         
