@@ -100,6 +100,13 @@ def processar_registros_e_midias(dados, drive_service):
 
     for reg in dados:
         reg_id = reg.get('_id')
+
+        # --- DIAGNOSTICO ESPECIFICO PARA ARRUMACAO ---
+        # Identifica se o registro possui chaves de arrumação ou banheiro
+        chaves_str = str(list(reg.keys()))
+        if "banheiro1" in chaves_str or "sala" in chaves_str or "quarto1" in chaves_str:
+            print(f"DEBUG_ARRUMACAO - Registro {reg_id} contem dados de cômodos! Chaves:", list(reg.keys()))
+        
         condominio = reg.get("grp_ident/cond_nome", "")
         endereco = reg.get("grp_ident/endereco_cond", "")
         apartamento = reg.get("grp_ident/apto", "")
