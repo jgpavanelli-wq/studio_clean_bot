@@ -100,10 +100,6 @@ def processar_registros_e_midias(dados, drive_service):
 
     for reg in dados:
         reg_id = reg.get('_id')
-        # --- LINHA DE DIAGNÓSTICO TEMPORÁRIA ---
-        print(f"DEBUG - Chaves disponíveis no registro {reg_id}:", list(reg.keys()))
-        # ----------------------------------------
-        
         condominio = reg.get("grp_ident/cond_nome", "")
         endereco = reg.get("grp_ident/endereco_cond", "")
         apartamento = reg.get("grp_ident/apto", "")
@@ -156,16 +152,16 @@ def processar_registros_e_midias(dados, drive_service):
                             
                             link_visualizacao = file_drive.get('webViewLink', '')
                             mapa_links_attachments[filename] = link_visualizacao
-                            print(f"Upload realizado com sucesso: {nome_no_drive}")
                         except Exception as e:
                             print(f"Erro no upload da foto {filename}: {e}")
                         
-                        # Remove o arquivo temporário local
                         if os.path.exists(caminho_local):
                             os.remove(caminho_local)
 
-        # Função auxiliar para buscar o link correto da foto enviada
+        # Função auxiliar segura para buscar o link da foto (só busca se o campo existir no registro)
         def obter_link_foto(campo_kobo):
+            if campo_kobo not in reg:
+                return ""
             nome_arquivo = reg.get(campo_kobo, "")
             if not nome_arquivo:
                 return ""
@@ -174,7 +170,7 @@ def processar_registros_e_midias(dados, drive_service):
                     return link
             return nome_arquivo
 
-        # Cálculo da porcentagem de conclusão
+        # Cálculo dinâmico da porcentagem (considera apenas as chaves que REALMENTE vieram no registro)
         chaves_checklist = [
             "grp_banheiro1/b1_cabelos", "grp_banheiro1/b1_box", "grp_banheiro1/b1_rack_piso", "grp_banheiro1/b1_acessorios", "grp_banheiro1/b1_sabonete", "grp_banheiro1/b1_toalhas", "grp_banheiro1/b1_papel", "grp_banheiro1/b1_torneiras", "grp_banheiro1/b1_funcional",
             "grp_banheiro2/b2_cabelos", "grp_banheiro2/b2_box", "grp_banheiro2/b2_rack_piso", "grp_banheiro2/b2_acessorios", "grp_banheiro2/b2_sabonete", "grp_banheiro2/b2_toalhas", "grp_banheiro2/b2_papel", "grp_banheiro2/b2_torneiras", "grp_banheiro2/b2_funcional",
@@ -191,7 +187,7 @@ def processar_registros_e_midias(dados, drive_service):
         total_itens = 0
         itens_ok = 0
         for chave in chaves_checklist:
-            if chave in reg:
+            if chave in reg:  # Só contabiliza se o campo pertencer a este formulário enviado
                 total_itens += 1
                 valor = reg.get(chave)
                 if valor in ["yes", "ok", "1", True]:
@@ -217,7 +213,7 @@ def processar_registros_e_midias(dados, drive_service):
             "Início": hora_inicio,
             "Término": hora_fim,
             "Tempo de Trabalho": tempo_trabalho,
-            "Conclusão (%)": f"{percentual_conclusao}%",
+            "Conclusão (%)": f"{percentual_conclusao}%" if total_itens > 0 else "N/A (Apenas Vistoria)",
             "Ocorrências / Obs": ocorrencias_finais,
             "Enviado por": enviar_por,
             
