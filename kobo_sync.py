@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 from datetime import datetime
 import gspread
-from google.oauth2.service_account import Credentials
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
@@ -17,11 +17,10 @@ HEADERS = {
     "Authorization": f"Token {TOKEN}"
 }
 
-CREDENTIALS_FILE = "credentials.json"
-SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive",
-]
+# Credenciais OAuth fornecidas pelo usuário
+OAUTH_CLIENT_ID = "264717223506-s4obgob0rflc3bi9jfs3jufi1unju1ff.apps.googleusercontent.com"
+OAUTH_CLIENT_SECRET = "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"
+OAUTH_REFRESH_TOKEN = "1//01YRTKf4C1z-9CgYIARAAGAESNwF-L9IrxM6LpTWB8XMQBbpeqGTCG6C82bBe25e39qBfToNkAS_gqecBnqXe0Z2--JuLupsftqg"
 
 MAPA_PRESTADORAS = {
     "i_01": "Carla dos Santos São José",
@@ -43,10 +42,24 @@ MAPA_PRESTADORAS = {
 }
 
 def autenticar_google():
-    """Autentica na Conta de Serviço para Drive e Sheets"""
-    creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=SCOPES)
-    drive_service = build("drive", "v3", credentials=creds)
-    gspread_client = gspread.authorize(creds)
+    """Autentica no Drive via OAuth pessoal e nas Planilhas via gspread"""
+    # Credenciais OAuth para o Google Drive (usando a sua conta com 400GB)
+    drive_creds = Credentials(
+        None,
+        refresh_token=OAUTH_REFRESH_TOKEN,
+        client_id=OAUTH_CLIENT_ID,
+        client_secret=OAUTH_CLIENT_SECRET,
+        token_uri="https://oauth2.googleapis.com/token"
+    )
+    drive_service = build("drive", "v3", credentials=drive_creds)
+    
+    # Para o gspread (Planilhas), mantemos a conta de serviço local que já funciona perfeitamente
+    sheet_creds = Credentials.from_service_account_file("credentials.json", scopes=[
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive",
+    ])
+    gspread_client = gspread.authorize(sheet_creds)
+    
     return drive_service, gspread_client
 
 def extrair_dados_kobo():
@@ -105,7 +118,7 @@ def processar_registros_e_midias(dados, drive_service):
         tempo_trabalho = calcular_duracao(hora_inicio, hora_fim)
         enviar_por = reg.get("_submitted_by", "")
 
-        # Processamento de anexos (Download do Kobo -> Upload para o Drive)
+        # Processamento de anexos (Download do Kobo -> Upload para o Drive via OAuth)
         attachments = reg.get("_attachments", [])
         mapa_links_attachments = {}
         
@@ -121,7 +134,7 @@ def processar_registros_e_midias(dados, drive_service):
                         with open(caminho_local, "wb") as f:
                             f.write(resp_foto.content)
                         
-                        # Upload para o Google Drive na pasta Historico_Kobo_Fotos
+                        # Upload para o Google Drive na pasta Historico_Kobo_Fotos usando a conta pessoal
                         nome_no_drive = f"Vistoria_{reg_id}_{filename}"
                         file_metadata = {
                             'name': nome_no_drive,
@@ -138,6 +151,7 @@ def processar_registros_e_midias(dados, drive_service):
                             
                             link_visualizacao = file_drive.get('webViewLink', '')
                             mapa_links_attachments[filename] = link_visualizacao
+                            print(f"Upload realizado com sucesso: {nome_no_drive}")
                         except Exception as e:
                             print(f"Erro no upload da foto {filename}: {e}")
                         
@@ -145,7 +159,7 @@ def processar_registros_e_midias(dados, drive_service):
                         if os.path.exists(caminho_local):
                             os.remove(caminho_local)
 
-        # Função auxiliar para buscar o link correto da foto enviada com base no caminho do Kobo
+        # Função auxiliar para buscar o link correto da foto enviada
         def obter_link_foto(campo_kobo):
             nome_arquivo = reg.get(campo_kobo, "")
             if not nome_arquivo:
@@ -155,22 +169,17 @@ def processar_registros_e_midias(dados, drive_service):
                     return link
             return nome_arquivo
 
-        # Cálculo da porcentagem de conclusão baseado nas chaves reais de checklist do PDF
+        # Cálculo da porcentagem de conclusão
         chaves_checklist = [
-            # Banheiros
             "grp_banheiro1/b1_cabelos", "grp_banheiro1/b1_box", "grp_banheiro1/b1_rack_piso", "grp_banheiro1/b1_acessorios", "grp_banheiro1/b1_sabonete", "grp_banheiro1/b1_toalhas", "grp_banheiro1/b1_papel", "grp_banheiro1/b1_torneiras", "grp_banheiro1/b1_funcional",
             "grp_banheiro2/b2_cabelos", "grp_banheiro2/b2_box", "grp_banheiro2/b2_rack_piso", "grp_banheiro2/b2_acessorios", "grp_banheiro2/b2_sabonete", "grp_banheiro2/b2_toalhas", "grp_banheiro2/b2_papel", "grp_banheiro2/b2_torneiras", "grp_banheiro2/b2_funcional",
             "grp_banheiro3/b3_cabelos", "grp_banheiro3/b3_box", "grp_banheiro3/b3_rack_piso", "grp_banheiro3/b3_acessorios", "grp_banheiro3/b3_sabonete", "grp_banheiro3/b3_toalhas", "grp_banheiro3/b3_papel", "grp_banheiro3/b3_torneiras", "grp_banheiro3/b3_funcional",
             "grp_banheiro4/b4_cabelos", "grp_banheiro4/b4_box", "grp_banheiro4/b4_rack_piso", "grp_banheiro4/b4_acessorios", "grp_banheiro4/b4_sabonete", "grp_banheiro4/b4_toalhas", "grp_banheiro4/b4_papel", "grp_banheiro4/b4_torneiras", "grp_banheiro4/b4_funcional",
-            # Sala / Varanda
             "grp_sala/sala_controles", "grp_sala/sala_varanda", "grp_sala/sala_moveis", "grp_sala/sala_portas", "grp_sala/sala_sofa", "grp_sala/sala_embaixo",
-            # Quartos
             "grp_quarto1/q1_enxoval", "grp_quarto1/q1_kit", "grp_quarto1/q1_cobertores", "grp_quarto1/q1_armario", "grp_quarto1/q1_enxoval_gd", "grp_quarto1/q1_cama_emb",
             "grp_quarto2/q2_enxoval", "grp_quarto2/q2_kit", "grp_quarto2/q2_cobertores", "grp_quarto2/q2_armario", "grp_quarto2/q2_enxoval_gd", "grp_quarto2/q2_cama_emb",
             "grp_quarto3/q3_enxoval", "grp_quarto3/q3_kit", "grp_quarto3/q3_cobertores", "grp_quarto3/q3_armario", "grp_quarto3/q3_enxoval_gd", "grp_quarto3/q3_cama_emb",
-            # Cozinha
             "grp_cozinha/coz_panoprato", "grp_cozinha/coz_loucas_num", "grp_cozinha/coz_geladeira", "grp_cozinha/coz_panelas", "grp_cozinha/coz_temp_gel", "grp_cozinha/coz_escorredor", "grp_cozinha/coz_lixeira", "grp_cozinha/coz_forno", "grp_cozinha/coz_cafe", "grp_cozinha/coz_sacos_lixo", "grp_cozinha/coz_placa", "grp_cozinha/coz_armario_ch", "grp_cozinha/coz_gas",
-            # Jacuzzi
             "grp_jacuzzi/jac_limpa", "grp_jacuzzi/jac_desinf"
         ]
 
@@ -207,7 +216,6 @@ def processar_registros_e_midias(dados, drive_service):
             "Ocorrências / Obs": ocorrencias_finais,
             "Enviado por": enviar_por,
             
-            # Mapeamentos corretos com os grupos do Kobo extraídos do PDF
             "Banheiro 1 - Foto 1": obter_link_foto("grp_banheiro1/b1_foto1"),
             "Banheiro 1 - Foto 2": obter_link_foto("grp_banheiro1/b1_foto2"),
             "Banheiro 1 - Obs": reg.get("grp_banheiro1/b1_obs", ""),
@@ -272,8 +280,7 @@ def atualizar_planilha_unica(df, gspread_client):
         print(f"Erro ao abrir a planilha fixa no Drive: {e}")
         return
 
-    data_to_upload = [df.columns.tolist()] + df.values.tolist()
-    sheet.update("A1", data_to_upload)
+    sheet.update(values=[df.columns.tolist()] + df.values.tolist(), range_name="A1")
     print("Sucesso absoluto! Planilha, porcentagem e links de fotos atualizados.")
 
 if __name__ == "__main__":
