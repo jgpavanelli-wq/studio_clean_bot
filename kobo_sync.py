@@ -145,29 +145,48 @@ def processar_registros_e_midias(dados, drive_service):
                         if os.path.exists(caminho_local):
                             os.remove(caminho_local)
 
-        # Função auxiliar para mapear o arquivo enviado ao campo correspondente ou retornar o link
-        def obter_link_ou_valor(campo_kobo):
+        # Função auxiliar para buscar o link correto da foto enviada com base no caminho do Kobo
+        def obter_link_foto(campo_kobo):
             nome_arquivo = reg.get(campo_kobo, "")
             if not nome_arquivo:
                 return ""
-            # Se o Kobo retornar o nome do arquivo, procuramos no mapa de links enviados
             for arq_base, link in mapa_links_attachments.items():
                 if nome_arquivo in arq_base:
                     return link
-            return nome_arquivo # Fallback caso seja texto puro
+            return nome_arquivo
+
+        # Cálculo da porcentagem de conclusão baseado nas chaves reais de checklist do PDF
+        chaves_checklist = [
+            # Banheiros
+            "grp_banheiro1/b1_cabelos", "grp_banheiro1/b1_box", "grp_banheiro1/b1_rack_piso", "grp_banheiro1/b1_acessorios", "grp_banheiro1/b1_sabonete", "grp_banheiro1/b1_toalhas", "grp_banheiro1/b1_papel", "grp_banheiro1/b1_torneiras", "grp_banheiro1/b1_funcional",
+            "grp_banheiro2/b2_cabelos", "grp_banheiro2/b2_box", "grp_banheiro2/b2_rack_piso", "grp_banheiro2/b2_acessorios", "grp_banheiro2/b2_sabonete", "grp_banheiro2/b2_toalhas", "grp_banheiro2/b2_papel", "grp_banheiro2/b2_torneiras", "grp_banheiro2/b2_funcional",
+            "grp_banheiro3/b3_cabelos", "grp_banheiro3/b3_box", "grp_banheiro3/b3_rack_piso", "grp_banheiro3/b3_acessorios", "grp_banheiro3/b3_sabonete", "grp_banheiro3/b3_toalhas", "grp_banheiro3/b3_papel", "grp_banheiro3/b3_torneiras", "grp_banheiro3/b3_funcional",
+            "grp_banheiro4/b4_cabelos", "grp_banheiro4/b4_box", "grp_banheiro4/b4_rack_piso", "grp_banheiro4/b4_acessorios", "grp_banheiro4/b4_sabonete", "grp_banheiro4/b4_toalhas", "grp_banheiro4/b4_papel", "grp_banheiro4/b4_torneiras", "grp_banheiro4/b4_funcional",
+            # Sala / Varanda
+            "grp_sala/sala_controles", "grp_sala/sala_varanda", "grp_sala/sala_moveis", "grp_sala/sala_portas", "grp_sala/sala_sofa", "grp_sala/sala_embaixo",
+            # Quartos
+            "grp_quarto1/q1_enxoval", "grp_quarto1/q1_kit", "grp_quarto1/q1_cobertores", "grp_quarto1/q1_armario", "grp_quarto1/q1_enxoval_gd", "grp_quarto1/q1_cama_emb",
+            "grp_quarto2/q2_enxoval", "grp_quarto2/q2_kit", "grp_quarto2/q2_cobertores", "grp_quarto2/q2_armario", "grp_quarto2/q2_enxoval_gd", "grp_quarto2/q2_cama_emb",
+            "grp_quarto3/q3_enxoval", "grp_quarto3/q3_kit", "grp_quarto3/q3_cobertores", "grp_quarto3/q3_armario", "grp_quarto3/q3_enxoval_gd", "grp_quarto3/q3_cama_emb",
+            # Cozinha
+            "grp_cozinha/coz_panoprato", "grp_cozinha/coz_loucas_num", "grp_cozinha/coz_geladeira", "grp_cozinha/coz_panelas", "grp_cozinha/coz_temp_gel", "grp_cozinha/coz_escorredor", "grp_cozinha/coz_lixeira", "grp_cozinha/coz_forno", "grp_cozinha/coz_cafe", "grp_cozinha/coz_sacos_lixo", "grp_cozinha/coz_placa", "grp_cozinha/coz_armario_ch", "grp_cozinha/coz_gas",
+            # Jacuzzi
+            "grp_jacuzzi/jac_limpa", "grp_jacuzzi/jac_desinf"
+        ]
 
         total_itens = 0
         itens_ok = 0
-        for chave, valor in reg.items():
-            if any(termo in chave.lower() for termo in ["verificar", "lavar", "limpar", "abastecer", "conferir", "repor", "bater", "tirar", "guardar", "colocar", "trancar", "jacuzzi"]):
+        for chave in chaves_checklist:
+            if chave in reg:
                 total_itens += 1
+                valor = reg.get(chave)
                 if valor in ["yes", "ok", "1", True]:
                     itens_ok += 1
         
         percentual_conclusao = round((itens_ok / total_itens * 100), 1) if total_itens > 0 else 0.0
 
         obs_vistoria = reg.get("grp_vistoria/vis_ocorrencias", "")
-        obs_geral = reg.get("Vistoria / Ocorrências / Observações", "")
+        obs_geral = reg.get("grp_geral", "")
         ocorrencias_finais = f"{obs_vistoria} {obs_geral}".strip()
 
         linha = {
@@ -188,50 +207,50 @@ def processar_registros_e_midias(dados, drive_service):
             "Ocorrências / Obs": ocorrencias_finais,
             "Enviado por": enviar_por,
             
-            # Mapeamento com os links gerados no Google Drive
-            "Banheiro 1 - Foto 1": obter_link_ou_valor("b1_foto1"),
-            "Banheiro 1 - Foto 2": obter_link_ou_valor("b1_foto2"),
-            "Banheiro 1 - Obs": reg.get("b1_obs", ""),
-            "Banheiro 2 - Foto 1": obter_link_ou_valor("b2_foto1"),
-            "Banheiro 2 - Foto 2": obter_link_ou_valor("b2_foto2"),
-            "Banheiro 2 - Obs": reg.get("b2_obs", ""),
-            "Banheiro 3 - Foto 1": obter_link_ou_valor("b3_foto1"),
-            "Banheiro 3 - Foto 2": obter_link_ou_valor("b3_foto2"),
-            "Banheiro 3 - Obs": reg.get("b3_obs", ""),
-            "Banheiro 4 - Foto 1": obter_link_ou_valor("b4_foto1"),
-            "Banheiro 4 - Foto 2": obter_link_ou_valor("b4_foto2"),
-            "Banheiro 4 - Obs": reg.get("b4_obs", ""),
-            "Sala/Varanda - Foto 1": obter_link_ou_valor("sala_foto1"),
-            "Sala/Varanda - Foto 2": obter_link_ou_valor("sala_foto2"),
-            "Sala/Varanda - Obs": reg.get("sala_obs", ""),
-            "Quarto 1 - Foto 1": obter_link_ou_valor("q1_foto1"),
-            "Quarto 1 - Foto 2": obter_link_ou_valor("q1_foto2"),
-            "Quarto 1 - Obs": reg.get("q1_obs", ""),
-            "Quarto 2 - Foto 1": obter_link_ou_valor("q2_foto1"),
-            "Quarto 2 - Foto 2": obter_link_ou_valor("q2_foto2"),
-            "Quarto 2 - Obs": reg.get("q2_obs", ""),
-            "Quarto 3 - Foto 1": obter_link_ou_valor("q3_foto1"),
-            "Quarto 3 - Foto 2": obter_link_ou_valor("q3_foto2"),
-            "Quarto 3 - Obs": reg.get("q3_obs", ""),
-            "Cozinha - Foto 1": obter_link_ou_valor("coz_foto1"),
-            "Cozinha - Foto 2": obter_link_ou_valor("coz_foto2"),
-            "Cozinha - Obs": reg.get("coz_obs", ""),
-            "Jacuzzi - Foto 1": obter_link_ou_valor("jac_foto1"),
-            "Jacuzzi - Foto 2": obter_link_ou_valor("jac_foto2"),
-            "Jacuzzi - Obs": reg.get("jac_obs", ""),
+            # Mapeamentos corretos com os grupos do Kobo extraídos do PDF
+            "Banheiro 1 - Foto 1": obter_link_foto("grp_banheiro1/b1_foto1"),
+            "Banheiro 1 - Foto 2": obter_link_foto("grp_banheiro1/b1_foto2"),
+            "Banheiro 1 - Obs": reg.get("grp_banheiro1/b1_obs", ""),
+            "Banheiro 2 - Foto 1": obter_link_foto("grp_banheiro2/b2_foto1"),
+            "Banheiro 2 - Foto 2": obter_link_foto("grp_banheiro2/b2_foto2"),
+            "Banheiro 2 - Obs": reg.get("grp_banheiro2/b2_obs", ""),
+            "Banheiro 3 - Foto 1": obter_link_foto("grp_banheiro3/b3_foto1"),
+            "Banheiro 3 - Foto 2": obter_link_foto("grp_banheiro3/b3_foto2"),
+            "Banheiro 3 - Obs": reg.get("grp_banheiro3/b3_obs", ""),
+            "Banheiro 4 - Foto 1": obter_link_foto("grp_banheiro4/b4_foto1"),
+            "Banheiro 4 - Foto 2": obter_link_foto("grp_banheiro4/b4_foto2"),
+            "Banheiro 4 - Obs": reg.get("grp_banheiro4/b4_obs", ""),
+            "Sala/Varanda - Foto 1": obter_link_foto("grp_sala/sala_foto1"),
+            "Sala/Varanda - Foto 2": obter_link_foto("grp_sala/sala_foto2"),
+            "Sala/Varanda - Obs": reg.get("grp_sala/sala_obs", ""),
+            "Quarto 1 - Foto 1": obter_link_foto("grp_quarto1/q1_foto1"),
+            "Quarto 1 - Foto 2": obter_link_foto("grp_quarto1/q1_foto2"),
+            "Quarto 1 - Obs": reg.get("grp_quarto1/q1_obs", ""),
+            "Quarto 2 - Foto 1": obter_link_foto("grp_quarto2/q2_foto1"),
+            "Quarto 2 - Foto 2": obter_link_foto("grp_quarto2/q2_foto2"),
+            "Quarto 2 - Obs": reg.get("grp_quarto2/q2_obs", ""),
+            "Quarto 3 - Foto 1": obter_link_foto("grp_quarto3/q3_foto1"),
+            "Quarto 3 - Foto 2": obter_link_foto("grp_quarto3/q3_foto2"),
+            "Quarto 3 - Obs": reg.get("grp_quarto3/q3_obs", ""),
+            "Cozinha - Foto 1": obter_link_foto("grp_cozinha/coz_foto1"),
+            "Cozinha - Foto 2": obter_link_foto("grp_cozinha/coz_foto2"),
+            "Cozinha - Obs": reg.get("grp_cozinha/coz_obs", ""),
+            "Jacuzzi - Foto 1": obter_link_foto("grp_jacuzzi/jac_foto1"),
+            "Jacuzzi - Foto 2": obter_link_foto("grp_jacuzzi/jac_foto2"),
+            "Jacuzzi - Obs": reg.get("grp_jacuzzi/jac_obs", ""),
             "Registro Geral": reg.get("grp_geral", ""),
             "Danos Observados": reg.get("obs_danos", ""),
-            "Foto Final 1": obter_link_ou_valor("foto_final1"),
-            "Foto Final 2": obter_link_ou_valor("foto_final2"),
-            "Foto Final 3": obter_link_ou_valor("foto_final3"),
-            "Vídeo Final 1": obter_link_ou_valor("video_final1"),
-            "Vídeo Final 2": obter_link_ou_valor("video_final2"),
-            "Foto Vistoria 1": obter_link_ou_valor("vis_foto1"),
-            "Foto Vistoria 2": obter_link_ou_valor("vis_foto2"),
-            "Foto Vistoria 3": obter_link_ou_valor("vis_foto3"),
-            "Foto Vistoria 4": obter_link_ou_valor("vis_foto4"),
-            "Vídeo Vistoria 1": obter_link_ou_valor("vis_video1"),
-            "Vídeo Vistoria 2": obter_link_ou_valor("vis_video2")
+            "Foto Final 1": obter_link_foto("foto_final1"),
+            "Foto Final 2": obter_link_foto("foto_final2"),
+            "Foto Final 3": obter_link_foto("foto_final3"),
+            "Vídeo Final 1": obter_link_foto("video_final1"),
+            "Vídeo Final 2": obter_link_foto("video_final2"),
+            "Foto Vistoria 1": obter_link_foto("grp_vistoria/vis_foto1"),
+            "Foto Vistoria 2": obter_link_foto("grp_vistoria/vis_foto2"),
+            "Foto Vistoria 3": obter_link_foto("grp_vistoria/vis_foto3"),
+            "Foto Vistoria 4": obter_link_foto("grp_vistoria/vis_foto4"),
+            "Vídeo Vistoria 1": obter_link_foto("grp_vistoria/vis_video1"),
+            "Vídeo Vistoria 2": obter_link_foto("grp_vistoria/vis_video2")
         }
         lista_processada.append(linha)
 
@@ -255,7 +274,7 @@ def atualizar_planilha_unica(df, gspread_client):
 
     data_to_upload = [df.columns.tolist()] + df.values.tolist()
     sheet.update("A1", data_to_upload)
-    print("Sucesso absoluto! Planilha e links de fotos atualizados.")
+    print("Sucesso absoluto! Planilha, porcentagem e links de fotos atualizados.")
 
 if __name__ == "__main__":
     drive_service, gspread_client = autenticar_google()
