@@ -100,6 +100,10 @@ def processar_registros_e_midias(dados, drive_service):
 
     for reg in dados:
         reg_id = reg.get('_id')
+        # --- LINHA DE DIAGNÓSTICO TEMPORÁRIA ---
+        print(f"DEBUG - Chaves disponíveis no registro {reg_id}:", list(reg.keys()))
+        # ----------------------------------------
+        
         condominio = reg.get("grp_ident/cond_nome", "")
         endereco = reg.get("grp_ident/endereco_cond", "")
         apartamento = reg.get("grp_ident/apto", "")
