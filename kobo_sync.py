@@ -284,6 +284,36 @@ def atualizar_planilha_unica(df, gspread_client):
     sheet.update(values=[df.columns.tolist()] + df.values.tolist(), range_name="A1")
     print("Sucesso absoluto! Planilha, porcentagem e links de fotos atualizados.")
 
+def enviar_email_relatorio():
+    remetente = "jgpavanelli@gmail.com"  # Coloque o seu e-mail real do Gmail aqui
+    senha = os.environ.get("MAIL_PASSWORD") # Pega a secret do GitHub Actions automaticamente
+    destinatario = "studioclean013@gmail.com"
+    link_planilha = "https://docs.google.com/spreadsheets/d/1AOu9P1hqv2Wc8XxiWSfJBccXaGAkUnee_0L1ARcwJ5o" # Cole o link da sua planilha aqui
+
+    msg = MIMEMultipart()
+    msg['From'] = remetente
+    msg['To'] = destinatario
+    msg['Subject'] = "Relatório Semanal - Sincronização Kobo / Studio Clean"
+
+    corpo = (
+        "Olá,\n\n"
+        "A sincronização automática semanal dos dados de vistorias e arrumações "
+        "do KoboToolbox foi concluída com sucesso.\n\n"
+        f"Você pode acessar a planilha atualizada aqui: {link_planilha}\n\n"
+        "Atenciosamente,\nRobô Studio Clean"
+    )
+    msg.attach(MIMEText(corpo, 'plain'))
+
+    try:
+        servidor = smtplib.SMTP('smtp.gmail.com', 587)
+        servidor.starttls()
+        servidor.login(remetente, senha)
+        servidor.sendmail(remetente, destinatario, msg.as_string())
+        servidor.quit()
+        print("E-mail de notificação enviado com sucesso para a Studio Clean!")
+    except Exception as e:
+        print(f"Erro ao enviar e-mail: {e}")
+
 def limpar_registros_kobo(ids_processados):
     """Deleta os registros do Kobo após o sucesso da sincronização"""
     print("Iniciando limpeza dos registros processados no KoboToolbox...")
