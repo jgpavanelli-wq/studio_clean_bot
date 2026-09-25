@@ -99,14 +99,7 @@ def processar_registros_e_midias(dados, drive_service):
     os.makedirs("temp_fotos", exist_ok=True)
 
     for reg in dados:
-        reg_id = reg.get('_id')
-
-        # --- DIAGNOSTICO ESPECIFICO PARA ARRUMACAO ---
-        # Identifica se o registro possui chaves de arrumação ou banheiro
-        chaves_str = str(list(reg.keys()))
-        if "banheiro1" in chaves_str or "sala" in chaves_str or "quarto1" in chaves_str:
-            print(f"DEBUG_ARRUMACAO - Registro {reg_id} contem dados de cômodos! Chaves:", list(reg.keys()))
-        
+        reg_id = reg.get('_id')        
         condominio = reg.get("grp_ident/cond_nome", "")
         endereco = reg.get("grp_ident/endereco_cond", "")
         apartamento = reg.get("grp_ident/apto", "")
@@ -177,24 +170,24 @@ def processar_registros_e_midias(dados, drive_service):
                     return link
             return nome_arquivo
 
-        # Cálculo dinâmico da porcentagem (considera apenas as chaves que REALMENTE vieram no registro)
+        # Cálculo dinâmico da porcentagem com o prefixo correto grp_arrumacao/
         chaves_checklist = [
-            "grp_banheiro1/b1_cabelos", "grp_banheiro1/b1_box", "grp_banheiro1/b1_rack_piso", "grp_banheiro1/b1_acessorios", "grp_banheiro1/b1_sabonete", "grp_banheiro1/b1_toalhas", "grp_banheiro1/b1_papel", "grp_banheiro1/b1_torneiras", "grp_banheiro1/b1_funcional",
-            "grp_banheiro2/b2_cabelos", "grp_banheiro2/b2_box", "grp_banheiro2/b2_rack_piso", "grp_banheiro2/b2_acessorios", "grp_banheiro2/b2_sabonete", "grp_banheiro2/b2_toalhas", "grp_banheiro2/b2_papel", "grp_banheiro2/b2_torneiras", "grp_banheiro2/b2_funcional",
-            "grp_banheiro3/b3_cabelos", "grp_banheiro3/b3_box", "grp_banheiro3/b3_rack_piso", "grp_banheiro3/b3_acessorios", "grp_banheiro3/b3_sabonete", "grp_banheiro3/b3_toalhas", "grp_banheiro3/b3_papel", "grp_banheiro3/b3_torneiras", "grp_banheiro3/b3_funcional",
-            "grp_banheiro4/b4_cabelos", "grp_banheiro4/b4_box", "grp_banheiro4/b4_rack_piso", "grp_banheiro4/b4_acessorios", "grp_banheiro4/b4_sabonete", "grp_banheiro4/b4_toalhas", "grp_banheiro4/b4_papel", "grp_banheiro4/b4_torneiras", "grp_banheiro4/b4_funcional",
-            "grp_sala/sala_controles", "grp_sala/sala_varanda", "grp_sala/sala_moveis", "grp_sala/sala_portas", "grp_sala/sala_sofa", "grp_sala/sala_embaixo",
-            "grp_quarto1/q1_enxoval", "grp_quarto1/q1_kit", "grp_quarto1/q1_cobertores", "grp_quarto1/q1_armario", "grp_quarto1/q1_enxoval_gd", "grp_quarto1/q1_cama_emb",
-            "grp_quarto2/q2_enxoval", "grp_quarto2/q2_kit", "grp_quarto2/q2_cobertores", "grp_quarto2/q2_armario", "grp_quarto2/q2_enxoval_gd", "grp_quarto2/q2_cama_emb",
-            "grp_quarto3/q3_enxoval", "grp_quarto3/q3_kit", "grp_quarto3/q3_cobertores", "grp_quarto3/q3_armario", "grp_quarto3/q3_enxoval_gd", "grp_quarto3/q3_cama_emb",
-            "grp_cozinha/coz_panoprato", "grp_cozinha/coz_loucas_num", "grp_cozinha/coz_geladeira", "grp_cozinha/coz_panelas", "grp_cozinha/coz_temp_gel", "grp_cozinha/coz_escorredor", "grp_cozinha/coz_lixeira", "grp_cozinha/coz_forno", "grp_cozinha/coz_cafe", "grp_cozinha/coz_sacos_lixo", "grp_cozinha/coz_placa", "grp_cozinha/coz_armario_ch", "grp_cozinha/coz_gas",
-            "grp_jacuzzi/jac_limpa", "grp_jacuzzi/jac_desinf"
+            "grp_arrumacao/grp_banheiro1/b1_cabelos", "grp_arrumacao/grp_banheiro1/b1_box", "grp_arrumacao/grp_banheiro1/b1_rack_piso", "grp_arrumacao/grp_banheiro1/b1_acessorios", "grp_arrumacao/grp_banheiro1/b1_sabonete", "grp_arrumacao/grp_banheiro1/b1_toalhas", "grp_arrumacao/grp_banheiro1/b1_papel", "grp_arrumacao/grp_banheiro1/b1_torneiras", "grp_arrumacao/grp_banheiro1/b1_funcional",
+            "grp_arrumacao/grp_banheiro2/b2_cabelos", "grp_arrumacao/grp_banheiro2/b2_box", "grp_arrumacao/grp_banheiro2/b2_rack_piso", "grp_arrumacao/grp_banheiro2/b2_acessorios", "grp_arrumacao/grp_banheiro2/b2_sabonete", "grp_arrumacao/grp_banheiro2/b2_toalhas", "grp_arrumacao/grp_banheiro2/b2_papel", "grp_arrumacao/grp_banheiro2/b2_torneiras", "grp_arrumacao/grp_banheiro2/b2_funcional",
+            "grp_arrumacao/grp_banheiro3/b3_cabelos", "grp_arrumacao/grp_banheiro3/b3_box", "grp_arrumacao/grp_banheiro3/b3_rack_piso", "grp_arrumacao/grp_banheiro3/b3_acessorios", "grp_arrumacao/grp_banheiro3/b3_sabonete", "grp_arrumacao/grp_banheiro3/b3_toalhas", "grp_arrumacao/grp_banheiro3/b3_papel", "grp_arrumacao/grp_banheiro3/b3_torneiras", "grp_arrumacao/grp_banheiro3/b3_funcional",
+            "grp_arrumacao/grp_banheiro4/b4_cabelos", "grp_arrumacao/grp_banheiro4/b4_box", "grp_arrumacao/grp_banheiro4/b4_rack_piso", "grp_arrumacao/grp_banheiro4/b4_acessorios", "grp_arrumacao/grp_banheiro4/b4_sabonete", "grp_arrumacao/grp_banheiro4/b4_toalhas", "grp_arrumacao/grp_banheiro4/b4_papel", "grp_arrumacao/grp_banheiro4/b4_torneiras", "grp_arrumacao/grp_banheiro4/b4_funcional",
+            "grp_arrumacao/grp_sala/sala_controles", "grp_arrumacao/grp_sala/sala_varanda", "grp_arrumacao/grp_sala/sala_moveis", "grp_arrumacao/grp_sala/sala_portas", "grp_arrumacao/grp_sala/sala_sofa", "grp_arrumacao/grp_sala/sala_embaixo",
+            "grp_arrumacao/grp_quarto1/q1_enxoval", "grp_arrumacao/grp_quarto1/q1_kit", "grp_arrumacao/grp_quarto1/q1_cobertores", "grp_arrumacao/grp_quarto1/q1_armario", "grp_arrumacao/grp_quarto1/q1_enxoval_gd", "grp_arrumacao/grp_quarto1/q1_cama_emb",
+            "grp_arrumacao/grp_quarto2/q2_enxoval", "grp_arrumacao/grp_quarto2/q2_kit", "grp_arrumacao/grp_quarto2/q2_cobertores", "grp_arrumacao/grp_quarto2/q2_armario", "grp_arrumacao/grp_quarto2/q2_enxoval_gd", "grp_arrumacao/grp_quarto2/q2_cama_emb",
+            "grp_arrumacao/grp_quarto3/q3_enxoval", "grp_arrumacao/grp_quarto3/q3_kit", "grp_arrumacao/grp_quarto3/q3_cobertores", "grp_arrumacao/grp_quarto3/q3_armario", "grp_arrumacao/grp_quarto3/q3_enxoval_gd", "grp_arrumacao/grp_quarto3/q3_cama_emb",
+            "grp_arrumacao/grp_cozinha/coz_panoprato", "grp_arrumacao/grp_cozinha/coz_loucas_num", "grp_arrumacao/grp_cozinha/coz_geladeira", "grp_arrumacao/grp_cozinha/coz_panelas", "grp_arrumacao/grp_cozinha/coz_temp_gel", "grp_arrumacao/grp_cozinha/coz_escorredor", "grp_arrumacao/grp_cozinha/coz_lixeira", "grp_arrumacao/grp_cozinha/coz_forno", "grp_arrumacao/grp_cozinha/coz_cafe", "grp_arrumacao/grp_cozinha/coz_sacos_lixo", "grp_arrumacao/grp_cozinha/coz_placa", "grp_arrumacao/grp_cozinha/coz_armario_ch", "grp_arrumacao/grp_cozinha/coz_gas",
+            "grp_arrumacao/grp_jacuzzi/jac_limpa", "grp_arrumacao/grp_jacuzzi/jac_desinf"
         ]
 
         total_itens = 0
         itens_ok = 0
         for chave in chaves_checklist:
-            if chave in reg:  # Só contabiliza se o campo pertencer a este formulário enviado
+            if chave in reg:
                 total_itens += 1
                 valor = reg.get(chave)
                 if valor in ["yes", "ok", "1", True]:
@@ -203,7 +196,7 @@ def processar_registros_e_midias(dados, drive_service):
         percentual_conclusao = round((itens_ok / total_itens * 100), 1) if total_itens > 0 else 0.0
 
         obs_vistoria = reg.get("grp_vistoria/vis_ocorrencias", "")
-        obs_geral = reg.get("grp_geral", "")
+        obs_geral = reg.get("grp_arrumacao/grp_geral", reg.get("grp_geral", ""))
         ocorrencias_finais = f"{obs_vistoria} {obs_geral}".strip()
 
         linha = {
@@ -224,43 +217,43 @@ def processar_registros_e_midias(dados, drive_service):
             "Ocorrências / Obs": ocorrencias_finais,
             "Enviado por": enviar_por,
             
-            "Banheiro 1 - Foto 1": obter_link_foto("grp_banheiro1/b1_foto1"),
-            "Banheiro 1 - Foto 2": obter_link_foto("grp_banheiro1/b1_foto2"),
-            "Banheiro 1 - Obs": reg.get("grp_banheiro1/b1_obs", ""),
-            "Banheiro 2 - Foto 1": obter_link_foto("grp_banheiro2/b2_foto1"),
-            "Banheiro 2 - Foto 2": obter_link_foto("grp_banheiro2/b2_foto2"),
-            "Banheiro 2 - Obs": reg.get("grp_banheiro2/b2_obs", ""),
-            "Banheiro 3 - Foto 1": obter_link_foto("grp_banheiro3/b3_foto1"),
-            "Banheiro 3 - Foto 2": obter_link_foto("grp_banheiro3/b3_foto2"),
-            "Banheiro 3 - Obs": reg.get("grp_banheiro3/b3_obs", ""),
-            "Banheiro 4 - Foto 1": obter_link_foto("grp_banheiro4/b4_foto1"),
-            "Banheiro 4 - Foto 2": obter_link_foto("grp_banheiro4/b4_foto2"),
-            "Banheiro 4 - Obs": reg.get("grp_banheiro4/b4_obs", ""),
-            "Sala/Varanda - Foto 1": obter_link_foto("grp_sala/sala_foto1"),
-            "Sala/Varanda - Foto 2": obter_link_foto("grp_sala/sala_foto2"),
-            "Sala/Varanda - Obs": reg.get("grp_sala/sala_obs", ""),
-            "Quarto 1 - Foto 1": obter_link_foto("grp_quarto1/q1_foto1"),
-            "Quarto 1 - Foto 2": obter_link_foto("grp_quarto1/q1_foto2"),
-            "Quarto 1 - Obs": reg.get("grp_quarto1/q1_obs", ""),
-            "Quarto 2 - Foto 1": obter_link_foto("grp_quarto2/q2_foto1"),
-            "Quarto 2 - Foto 2": obter_link_foto("grp_quarto2/q2_foto2"),
-            "Quarto 2 - Obs": reg.get("grp_quarto2/q2_obs", ""),
-            "Quarto 3 - Foto 1": obter_link_foto("grp_quarto3/q3_foto1"),
-            "Quarto 3 - Foto 2": obter_link_foto("grp_quarto3/q3_foto2"),
-            "Quarto 3 - Obs": reg.get("grp_quarto3/q3_obs", ""),
-            "Cozinha - Foto 1": obter_link_foto("grp_cozinha/coz_foto1"),
-            "Cozinha - Foto 2": obter_link_foto("grp_cozinha/coz_foto2"),
-            "Cozinha - Obs": reg.get("grp_cozinha/coz_obs", ""),
-            "Jacuzzi - Foto 1": obter_link_foto("grp_jacuzzi/jac_foto1"),
-            "Jacuzzi - Foto 2": obter_link_foto("grp_jacuzzi/jac_foto2"),
-            "Jacuzzi - Obs": reg.get("grp_jacuzzi/jac_obs", ""),
-            "Registro Geral": reg.get("grp_geral", ""),
-            "Danos Observados": reg.get("obs_danos", ""),
-            "Foto Final 1": obter_link_foto("foto_final1"),
-            "Foto Final 2": obter_link_foto("foto_final2"),
-            "Foto Final 3": obter_link_foto("foto_final3"),
-            "Vídeo Final 1": obter_link_foto("video_final1"),
-            "Vídeo Final 2": obter_link_foto("video_final2"),
+            "Banheiro 1 - Foto 1": obter_link_foto("grp_arrumacao/grp_banheiro1/b1_foto1"),
+            "Banheiro 1 - Foto 2": obter_link_foto("grp_arrumacao/grp_banheiro1/b1_foto2"),
+            "Banheiro 1 - Obs": reg.get("grp_arrumacao/grp_banheiro1/b1_obs", ""),
+            "Banheiro 2 - Foto 1": obter_link_foto("grp_arrumacao/grp_banheiro2/b2_foto1"),
+            "Banheiro 2 - Foto 2": obter_link_foto("grp_arrumacao/grp_banheiro2/b2_foto2"),
+            "Banheiro 2 - Obs": reg.get("grp_arrumacao/grp_banheiro2/b2_obs", ""),
+            "Banheiro 3 - Foto 1": obter_link_foto("grp_arrumacao/grp_banheiro3/b3_foto1"),
+            "Banheiro 3 - Foto 2": obter_link_foto("grp_arrumacao/grp_banheiro3/b3_foto2"),
+            "Banheiro 3 - Obs": reg.get("grp_arrumacao/grp_banheiro3/b3_obs", ""),
+            "Banheiro 4 - Foto 1": obter_link_foto("grp_arrumacao/grp_banheiro4/b4_foto1"),
+            "Banheiro 4 - Foto 2": obter_link_foto("grp_arrumacao/grp_banheiro4/b4_foto2"),
+            "Banheiro 4 - Obs": reg.get("grp_arrumacao/grp_banheiro4/b4_obs", ""),
+            "Sala/Varanda - Foto 1": obter_link_foto("grp_arrumacao/grp_sala/sala_foto1"),
+            "Sala/Varanda - Foto 2": obter_link_foto("grp_arrumacao/grp_sala/sala_foto2"),
+            "Sala/Varanda - Obs": reg.get("grp_arrumacao/grp_sala/sala_obs", ""),
+            "Quarto 1 - Foto 1": obter_link_foto("grp_arrumacao/grp_quarto1/q1_foto1"),
+            "Quarto 1 - Foto 2": obter_link_foto("grp_arrumacao/grp_quarto1/q1_foto2"),
+            "Quarto 1 - Obs": reg.get("grp_arrumacao/grp_quarto1/q1_obs", ""),
+            "Quarto 2 - Foto 1": obter_link_foto("grp_arrumacao/grp_quarto2/q2_foto1"),
+            "Quarto 2 - Foto 2": obter_link_foto("grp_arrumacao/grp_quarto2/q2_foto2"),
+            "Quarto 2 - Obs": reg.get("grp_arrumacao/grp_quarto2/q2_obs", ""),
+            "Quarto 3 - Foto 1": obter_link_foto("grp_arrumacao/grp_quarto3/q3_foto1"),
+            "Quarto 3 - Foto 2": obter_link_foto("grp_arrumacao/grp_quarto3/q3_foto2"),
+            "Quarto 3 - Obs": reg.get("grp_arrumacao/grp_quarto3/q3_obs", ""),
+            "Cozinha - Foto 1": obter_link_foto("grp_arrumacao/grp_cozinha/coz_foto1"),
+            "Cozinha - Foto 2": obter_link_foto("grp_arrumacao/grp_cozinha/coz_foto2"),
+            "Cozinha - Obs": reg.get("grp_arrumacao/grp_cozinha/coz_obs", ""),
+            "Jacuzzi - Foto 1": obter_link_foto("grp_arrumacao/grp_jacuzzi/jac_foto1"),
+            "Jacuzzi - Foto 2": obter_link_foto("grp_arrumacao/grp_jacuzzi/jac_foto2"),
+            "Jacuzzi - Obs": reg.get("grp_arrumacao/grp_jacuzzi/jac_obs", ""),
+            "Registro Geral": reg.get("grp_arrumacao/grp_geral", reg.get("grp_geral", "")),
+            "Danos Observados": reg.get("grp_arrumacao/obs_danos", reg.get("obs_danos", "")),
+            "Foto Final 1": obter_link_foto("grp_arrumacao/grp_geral/foto_final1"),
+            "Foto Final 2": obter_link_foto("grp_arrumacao/grp_geral/foto_final2"),
+            "Foto Final 3": obter_link_foto("grp_arrumacao/grp_geral/foto_final3"),
+            "Vídeo Final 1": obter_link_foto("grp_arrumacao/grp_geral/video_final1"),
+            "Vídeo Final 2": obter_link_foto("grp_arrumacao/grp_geral/video_final2"),
             "Foto Vistoria 1": obter_link_foto("grp_vistoria/vis_foto1"),
             "Foto Vistoria 2": obter_link_foto("grp_vistoria/vis_foto2"),
             "Foto Vistoria 3": obter_link_foto("grp_vistoria/vis_foto3"),
