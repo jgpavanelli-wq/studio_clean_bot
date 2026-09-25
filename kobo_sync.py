@@ -288,5 +288,14 @@ if __name__ == "__main__":
     drive_service, gspread_client = autenticar_google()
     dados_brutos = extrair_dados_kobo()
     if dados_brutos:
+        # Recolhe os IDs para poder limpar depois
+        ids_a_limpar = [reg.get('_id') for reg in dados_brutos if reg.get('_id')]
+        
         df_final = processar_registros_e_midias(dados_brutos, drive_service)
         atualizar_planilha_unica(df_final, gspread_client)
+        
+        # Envia o e-mail de aviso
+        enviar_email_relatorio()
+        
+        # Opcional: Descomente abaixo apenas quando quiser ativar a limpeza automática do Kobo
+        # limpar_registros_kobo(ids_a_limpar)
