@@ -3,9 +3,8 @@ import requests
 import pandas as pd
 from datetime import datetime
 import gspread
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
+from google.oauth2.credentials import Credentials as OAuthCredentials
+from google.oauth2.service_account import Credentials as ServiceAccountCredentials
 
 # --- 1. Configurações de Acesso ---
 KOBO_URL = "https://kf.kobotoolbox.org"
@@ -44,7 +43,7 @@ MAPA_PRESTADORAS = {
 def autenticar_google():
     """Autentica no Drive via OAuth pessoal e nas Planilhas via gspread"""
     # Credenciais OAuth para o Google Drive (usando a sua conta com 400GB)
-    drive_creds = Credentials(
+    drive_creds = OAuthCredentials(
         None,
         refresh_token=OAUTH_REFRESH_TOKEN,
         client_id=OAUTH_CLIENT_ID,
@@ -53,8 +52,8 @@ def autenticar_google():
     )
     drive_service = build("drive", "v3", credentials=drive_creds)
     
-    # Para o gspread (Planilhas), mantemos a conta de serviço local que já funciona perfeitamente
-    sheet_creds = Credentials.from_service_account_file("credentials.json", scopes=[
+    # Para o gspread (Planilhas), usamos explicitamente a classe da Conta de Serviço
+    sheet_creds = ServiceAccountCredentials.from_service_account_file("credentials.json", scopes=[
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive",
     ])
