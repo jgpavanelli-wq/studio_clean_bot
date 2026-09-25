@@ -284,6 +284,17 @@ def atualizar_planilha_unica(df, gspread_client):
     sheet.update(values=[df.columns.tolist()] + df.values.tolist(), range_name="A1")
     print("Sucesso absoluto! Planilha, porcentagem e links de fotos atualizados.")
 
+def limpar_registros_kobo(ids_processados):
+    """Deleta os registros do Kobo após o sucesso da sincronização"""
+    print("Iniciando limpeza dos registros processados no KoboToolbox...")
+    for reg_id in ids_processados:
+        url_delete = f"{KOBO_URL}/api/v2/assets/{ASSET_UID}/data/{reg_id}/"
+        response = requests.delete(url_delete, headers=HEADERS)
+        if response.status_code in [204, 200]:
+            print(f"Registro {reg_id} removido do Kobo com sucesso.")
+        else:
+            print(f"Erro ao remover registro {reg_id}: {response.status_code}")
+
 if __name__ == "__main__":
     drive_service, gspread_client = autenticar_google()
     dados_brutos = extrair_dados_kobo()
