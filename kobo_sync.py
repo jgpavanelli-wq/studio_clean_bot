@@ -14,21 +14,17 @@ from email.mime.multipart import MIMEMultipart
 # --- 1. Configurações de Acesso ---
 KOBO_URL = "https://kf.kobotoolbox.org"
 ASSET_UID = "aoXMqam2RfsKFvZVPkQdn6"
-TOKEN = "a21c8e2faa2199f313a9bbdc231f405078fbf2b6"
+TOKEN = "a21c8e2faa2199f313a9bbdc231f405078fbf2b6" 
 PASTA_FOTOS_ID = "1yvy6cFjjVDs6nZ2FKDySDR9DNb1zNaI_"
 
 HEADERS = {
     "Authorization": f"Token {TOKEN}"
 }
 
-# Credenciais OAuth puxadas de forma segura das Secrets do GitHub
-drive_creds = OAuthCredentials(
-    None,
-    refresh_token="a21c8e2faa2199f313a9bbdc231f405078fbf2b6",
-    client_id="264717223506-s4obgob0rflc3bi9jfs3jufi1unju1ff.apps.googleusercontent.com",
-    client_secret="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",
-    token_uri="https://oauth2.googleapis.com/token"
-)
+# Credenciais OAuth declaradas diretamente para o teste
+OAUTH_CLIENT_ID = "264717223506-s4obgob0rflc3bi9jfs3jufi1unju1ff.apps.googleusercontent.com"
+OAUTH_CLIENT_SECRET = "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"
+OAUTH_REFRESH_TOKEN = "1//01YRTKf4C1z-9CgYIARAAGAESNwF-L9IrxM6LpTWB8XMQBbpeqGTCG6C82bBe25e39qBfToNkAS_gqecBnqXe0Z2--JuLupsftqg"
 
 MAPA_PRESTADORAS = {
     "i_01": "Carla dos Santos São José",
