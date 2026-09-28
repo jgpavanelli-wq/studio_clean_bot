@@ -14,7 +14,7 @@ from email.mime.multipart import MIMEMultipart
 # --- 1. Configurações de Acesso ---
 KOBO_URL = "https://kf.kobotoolbox.org"
 ASSET_UID = "aoXMqam2RfsKFvZVPkQdn6"
-TOKEN = os.environ.get("KOBO_TOKEN")  # Puxa do cofre seguro
+TOKEN = "a21c8e2faa2199f313a9bbdc231f405078fbf2b6"
 PASTA_FOTOS_ID = "1yvy6cFjjVDs6nZ2FKDySDR9DNb1zNaI_"
 
 HEADERS = {
