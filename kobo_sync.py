@@ -268,24 +268,42 @@ def processar_registros_e_midias(dados, drive_service):
 
     return pd.DataFrame(lista_processada)
 
-def atualizar_planilha_unica(df, gspread_client):
+def atualizar_planilha_unica(df, gspread_client, drive_service):
     if df.empty:
         print("Nenhum dado para enviar.")
         return
 
-    nome_planilha = "Historico_Checklist_Kobo"
+    # Data atual para referenciar no nome da nova planilha
+    data_hoje = datetime.now().strftime("%Y-%m-%d_%H-%M")
+    novo_nome_planilha = f"Historico_Checklist_Kobo_{data_hoje}"
     
-    try:
-        spreadsheet = gspread_client.open(nome_planilha)
-        sheet = spreadsheet.sheet1
-        sheet.clear()
-        print(f"Planilha fixa '{nome_planilha}' aberta e limpa com sucesso.")
-    except Exception as e:
-        print(f"Erro ao abrir a planilha fixa no Drive: {e}")
-        return
+    # ID do seu Modelo de Planilha fixo no Google Drive (cole o ID da sua planilha modelo aqui)
+    ID_PLANILHA_MODELO = "1AOu9P1hqv2Wc8XxiWSfJBccXaGAkUnee_0L1ARcwJ5o" 
 
-    sheet.update(values=[df.columns.tolist()] + df.values.tolist(), range_name="A1")
-    print("Sucesso absoluto! Planilha, porcentagem e links de fotos atualizados.")
+    try:
+        print(f"Criando nova planilha para este ciclo: {novo_nome_planilha}...")
+        
+        # Copia o modelo usando a API do Drive (sua conta pessoal / credenciais do Drive)
+        body = {
+            'name': novo_nome_planilha
+        }
+        copia_arquivo = drive_service.files().copy(
+            fileId=ID_PLANILHA_MODELO,
+            body=body
+        ).execute()
+        
+        novo_id_planilha = copia_arquivo.get('id')
+        
+        # Abre a nova planilha recém-criada usando o gspread
+        spreadsheet = gspread_client.open_by_key(novo_id_planilha)
+        sheet = spreadsheet.sheet1
+        
+        # Insere os dados
+        sheet.update(values=[df.columns.tolist()] + df.values.tolist(), range_name="A1")
+        print(f"Sucesso absoluto! Nova planilha '{novo_nome_planilha}' gerada e preenchida com sucesso.")
+        
+    except Exception as e:
+        print(f"Erro ao criar/atualizar a nova planilha no Drive: {e}")
 
 def enviar_email_relatorio():
     remetente = "jgpavanelli@gmail.com"  # Coloque o seu e-mail real do Gmail aqui
@@ -332,14 +350,15 @@ if __name__ == "__main__":
     drive_service, gspread_client = autenticar_google()
     dados_brutos = extrair_dados_kobo()
     if dados_brutos:
-        # Recolhe os IDs para poder limpar depois
         ids_a_limpar = [reg.get('_id') for reg in dados_brutos if reg.get('_id')]
         
         df_final = processar_registros_e_midias(dados_brutos, drive_service)
-        atualizar_planilha_unica(df_final, gspread_client)
+        
+        # Passando o drive_service para a função criar a cópia com data
+        atualizar_planilha_unica(df_final, gspread_client, drive_service)
         
         # Envia o e-mail de aviso
         enviar_email_relatorio()
         
-        # Opcional: Descomente abaixo apenas quando quiser ativar a limpeza automática do Kobo
+        # Limpeza automática do Kobo
         limpar_registros_kobo(ids_a_limpar)
