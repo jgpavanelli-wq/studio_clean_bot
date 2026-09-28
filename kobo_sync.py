@@ -22,9 +22,13 @@ HEADERS = {
 }
 
 # Credenciais OAuth puxadas de forma segura das Secrets do GitHub
-OAUTH_CLIENT_ID = os.environ.get("OAUTH_CLIENT_ID")
-OAUTH_CLIENT_SECRET = os.environ.get("OAUTH_CLIENT_SECRET")
-OAUTH_REFRESH_TOKEN = os.environ.get("OAUTH_REFRESH_TOKEN")
+drive_creds = OAuthCredentials(
+    None,
+    refresh_token="a21c8e2faa2199f313a9bbdc231f405078fbf2b6",
+    client_id="264717223506-s4obgob0rflc3bi9jfs3jufi1unju1ff.apps.googleusercontent.com",
+    client_secret="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",
+    token_uri="https://oauth2.googleapis.com/token"
+)
 
 MAPA_PRESTADORAS = {
     "i_01": "Carla dos Santos São José",
