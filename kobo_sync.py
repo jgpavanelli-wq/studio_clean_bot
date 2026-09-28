@@ -305,13 +305,12 @@ def atualizar_planilha_unica(df, gspread_client, drive_service):
         print(f"Erro ao criar/atualizar a nova planilha no Drive: {e}")
 
 def enviar_email_relatorio():
-    # Usamos o seu e-mail real diretamente, sem depender de variáveis de ambiente para o endereço
     remetente = "jgpavanelli@gmail.com"
-    
-    # Puxa a senha de aplicativo do cofre seguro do GitHub Actions
     senha = os.environ.get("MAIL_PASSWORD") 
     destinatario = "studioclean013@gmail.com"
-    link_planilha = "https://docs.google.com/spreadsheets/d/1AOu9P1hqv2Wc8XxiWSfJBccXaGAkUnee_0L1ARcwJ5o"
+    
+    # COLE AQUI O LINK DA PASTA DO GOOGLE DRIVE ONDE AS PLANILHAS SÃO SALVAS:
+    link_pasta_planilhas = "https://drive.google.com/drive/folders/1_fw1PjAjsSnZ_yLE6IHm4DRHYlDk7kmu"
 
     if not senha:
         print("ERRO DE E-MAIL: A secret MAIL_PASSWORD não foi encontrada ou está vazia no GitHub Actions!")
@@ -326,10 +325,12 @@ def enviar_email_relatorio():
         "Olá,\n\n"
         "A sincronização automática semanal dos dados de vistorias e arrumações "
         "do KoboToolbox foi concluída com sucesso.\n\n"
-        f"Você pode acessar a planilha atualizada aqui: {link_planilha}\n\n"
+        f"Você pode acessar a pasta com todas as planilhas atualizadas aqui: {link_pasta_planilhas}\n\n"
         "Atenciosamente,\nRobô Studio Clean"
     )
     msg.attach(MIMEText(corpo, 'plain'))
+
+    # ... restante do código de envio do e-mail ...
 
     try:
         servidor = smtplib.SMTP('smtp.gmail.com', 587)
