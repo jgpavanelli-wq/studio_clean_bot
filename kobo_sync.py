@@ -306,10 +306,14 @@ def atualizar_planilha_unica(df, gspread_client, drive_service):
         print(f"Erro ao criar/atualizar a nova planilha no Drive: {e}")
 
 def enviar_email_relatorio():
-    remetente = "jgpavanelli@gmail.com"  # Coloque o seu e-mail real do Gmail aqui
-    senha = os.environ.get("MAIL_PASSWORD") # Pega a secret do GitHub Actions automaticamente
+    remetente = "jgpavanelli@gmail.com"
+    senha = os.environ.get("MAIL_PASSWORD") 
     destinatario = "studioclean013@gmail.com"
-    link_planilha = "https://docs.google.com/spreadsheets/d/1AOu9P1hqv2Wc8XxiWSfJBccXaGAkUnee_0L1ARcwJ5o" # Cole o link da sua planilha aqui
+    link_planilha = "https://docs.google.com/spreadsheets/d/1AOu9P1hqv2Wc8XxiWSfJBccXaGAkUnee_0L1ARcwJ5o"
+
+    if not senha:
+        print("ERRO DE E-MAIL: A secret MAIL_PASSWORD não foi encontrada pelo GitHub Actions!")
+        return
 
     msg = MIMEMultipart()
     msg['From'] = remetente
@@ -331,9 +335,9 @@ def enviar_email_relatorio():
         servidor.login(remetente, senha)
         servidor.sendmail(remetente, destinatario, msg.as_string())
         servidor.quit()
-        print("E-mail de notificação enviado com sucesso para a Studio Clean!")
+        print("E-mail de relatorio enviado com sucesso para a Studio Clean!")
     except Exception as e:
-        print(f"Erro ao enviar e-mail: {e}")
+        print(f"FALHA DETALHADA AO ENVIAR E-MAIL: {e}")
 
 def limpar_registros_kobo(ids_processados):
     """Deleta os registros do Kobo após o sucesso da sincronização"""
