@@ -7,6 +7,9 @@ from google.oauth2.credentials import Credentials as OAuthCredentials
 from google.oauth2.service_account import Credentials as ServiceAccountCredentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # --- 1. Configurações de Acesso ---
 KOBO_URL = "https://kf.kobotoolbox.org"
@@ -339,4 +342,4 @@ if __name__ == "__main__":
         enviar_email_relatorio()
         
         # Opcional: Descomente abaixo apenas quando quiser ativar a limpeza automática do Kobo
-        # limpar_registros_kobo(ids_a_limpar)
+        limpar_registros_kobo(ids_a_limpar)
