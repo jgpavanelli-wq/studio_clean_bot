@@ -187,18 +187,13 @@ def processar_registros_e_midias(dados, drive_service):
             "grp_arrumacao/grp_jacuzzi/jac_limpa", "grp_arrumacao/grp_jacuzzi/jac_desinf"
         ]
 
-        total_itens = 0
+        total_itens = len(chaves_checklist)  # Total fixo de itens possíveis no checklist de arrumação
         itens_ok = 0
+        
         for chave in chaves_checklist:
-            if chave in reg:
-                valor = str(reg.get(chave, "")).strip().upper()
-                # Diagnóstico: vamos ver o que veio em cada chave presente no registro
-                print(f"CHECKLIST -> Chave: {chave} | Valor: '{valor}'")
-                
-                if valor: # Se a chave existe e tem algum valor preenchido
-                    total_itens += 1
-                    if valor in ["YES", "OK", "1", "TRUE"]:
-                        itens_ok += 1
+            valor = str(reg.get(chave, "")).strip().upper()
+            if valor in ["YES", "OK", "1", "TRUE"]:
+                itens_ok += 1
         
         percentual_conclusao = round((itens_ok / total_itens * 100), 1) if total_itens > 0 else 0.0
 
