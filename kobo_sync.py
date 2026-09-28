@@ -305,7 +305,7 @@ def atualizar_planilha_unica(df, gspread_client, drive_service):
         print(f"Erro ao criar/atualizar a nova planilha no Drive: {e}")
 
 def enviar_email_relatorio():
-    remetente = "jgpavanelli@gmail.com"
+    remetente = os.environ.get("MEU_EMAIL")
     senha = os.environ.get("MAIL_PASSWORD") 
     destinatario = "studioclean013@gmail.com"
     link_planilha = "https://docs.google.com/spreadsheets/d/1AOu9P1hqv2Wc8XxiWSfJBccXaGAkUnee_0L1ARcwJ5o"
