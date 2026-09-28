@@ -305,13 +305,16 @@ def atualizar_planilha_unica(df, gspread_client, drive_service):
         print(f"Erro ao criar/atualizar a nova planilha no Drive: {e}")
 
 def enviar_email_relatorio():
-    remetente = os.environ.get("MEU_EMAIL")
+    # Usamos o seu e-mail real diretamente, sem depender de variáveis de ambiente para o endereço
+    remetente = "jgpavanelli@gmail.com"
+    
+    # Puxa a senha de aplicativo do cofre seguro do GitHub Actions
     senha = os.environ.get("MAIL_PASSWORD") 
     destinatario = "studioclean013@gmail.com"
     link_planilha = "https://docs.google.com/spreadsheets/d/1AOu9P1hqv2Wc8XxiWSfJBccXaGAkUnee_0L1ARcwJ5o"
 
     if not senha:
-        print("ERRO DE E-MAIL: A secret MAIL_PASSWORD não foi encontrada pelo GitHub Actions!")
+        print("ERRO DE E-MAIL: A secret MAIL_PASSWORD não foi encontrada ou está vazia no GitHub Actions!")
         return
 
     msg = MIMEMultipart()
@@ -334,7 +337,7 @@ def enviar_email_relatorio():
         servidor.login(remetente, senha)
         servidor.sendmail(remetente, destinatario, msg.as_string())
         servidor.quit()
-        print("E-mail de relatorio enviado com sucesso para a Studio Clean!")
+        print("E-mail de relatório enviado com sucesso para a Studio Clean!")
     except Exception as e:
         print(f"FALHA DETALHADA AO ENVIAR E-MAIL: {e}")
 
