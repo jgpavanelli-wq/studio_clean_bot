@@ -14,17 +14,17 @@ from email.mime.multipart import MIMEMultipart
 # --- 1. Configurações de Acesso ---
 KOBO_URL = "https://kf.kobotoolbox.org"
 ASSET_UID = "aoXMqam2RfsKFvZVPkQdn6"
-TOKEN = "a21c8e2faa2199f313a9bbdc231f405078fbf2b6" 
+TOKEN = os.environ.get("KOBO_TOKEN")  # Puxa do cofre seguro
 PASTA_FOTOS_ID = "1yvy6cFjjVDs6nZ2FKDySDR9DNb1zNaI_"
 
 HEADERS = {
     "Authorization": f"Token {TOKEN}"
 }
 
-# Credenciais OAuth declaradas diretamente para o teste
-OAUTH_CLIENT_ID = "264717223506-s4obgob0rflc3bi9jfs3jufi1unju1ff.apps.googleusercontent.com"
-OAUTH_CLIENT_SECRET = "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"
-OAUTH_REFRESH_TOKEN = "1//01YRTKf4C1z-9CgYIARAAGAESNwF-L9IrxM6LpTWB8XMQBbpeqGTCG6C82bBe25e39qBfToNkAS_gqecBnqXe0Z2--JuLupsftqg"
+# Credenciais OAuth puxadas de forma segura das Secrets do GitHub
+OAUTH_CLIENT_ID = os.environ.get("OAUTH_CLIENT_ID")
+OAUTH_CLIENT_SECRET = os.environ.get("OAUTH_CLIENT_SECRET")
+OAUTH_REFRESH_TOKEN = os.environ.get("OAUTH_REFRESH_TOKEN")
 
 MAPA_PRESTADORAS = {
     "i_01": "Carla dos Santos São José",
