@@ -354,18 +354,29 @@ def limpar_registros_kobo(ids_processados):
             print(f"Erro ao remover registro {reg_id}: {response.status_code}")
 
 if __name__ == "__main__":
-    drive_service, gspread_client = autenticar_google()
-    dados_brutos = extrair_dados_kobo()
-    if dados_brutos:
-        ids_a_limpar = [reg.get('_id') for reg in dados_brutos if reg.get('_id')]
+    try:
+        drive_service, gspread_client = autenticar_google()
+        dados_brutos = extrair_dados_kobo()
         
-        df_final = processar_registros_e_midias(dados_brutos, drive_service)
-        
-        # Passando o drive_service para a função criar a cópia com data
-        atualizar_planilha_unica(df_final, gspread_client, drive_service)
-        
-        # Envia o e-mail de aviso
-        # enviar_email_relatorio()
+        if dados_brutos:
+            ids_a_limpar = [reg.get('_id') for reg in dados_brutos if reg.get('_id')]
+            
+            df_final = processar_registros_e_midias(dados_brutos, drive_service)
+            
+            # Cria a planilha e salva no Drive
+            atualizar_planilha_unica(df_final, gspread_client, drive_service)
+            
+            # Envia o e-mail de relatório
+            enviar_email_relatorio()
+            
+            # SUCESSO TOTAL: Somente agora o Kobo é limpo com segurança!
+            limpar_registros_kobo(ids_a_limpar)
+        else:
+            print("Nenhum registro novo encontrado no Kobo neste ciclo.")
+            
+    except Exception as e:
+        print(f"ERRO CRÍTICO NO CICLO DE SINCRONIZAÇÃO: {e}")
+        print("ATENÇÃO: Os dados do Kobo foram preservados e NENHUM registro foi apagado.")
         
         # Limpeza automática do Kobo
         # limpar_registros_kobo(ids_a_limpar)
