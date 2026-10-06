@@ -365,7 +365,7 @@ if __name__ == "__main__":
         atualizar_planilha_unica(df_final, gspread_client, drive_service)
         
         # Envia o e-mail de aviso
-        enviar_email_relatorio()
+        # enviar_email_relatorio()
         
         # Limpeza automática do Kobo
         limpar_registros_kobo(ids_a_limpar)
