@@ -368,4 +368,4 @@ if __name__ == "__main__":
         # enviar_email_relatorio()
         
         # Limpeza automática do Kobo
-        limpar_registros_kobo(ids_a_limpar)
+        # limpar_registros_kobo(ids_a_limpar)
